@@ -31,12 +31,18 @@ export const unauthorizedRequest = async (url, method, body) => {
             "Accept": "application/json", "Content-Type": "application/json"
         }
     }
-    const response = await fetch(url, request);
-
-    if (response.status === 200) {
-        return await response.json();
-    } else {
-        return response.status
+    try {
+        const response = await fetch(url, request);
+        if (response.status === 200) {
+            return await response.json();
+        } else {
+            return response.status
+        }
+    }
+    catch (er) {
+        if (er) {
+            console.log(er);
+        }
     }
 }
 
@@ -57,19 +63,24 @@ export const authorizedRequest = async (url, method, tokenType = 'accessToken', 
             "Authorization": "Bearer " + token
         }
     }
+    try {
+        const response = await fetch(url, request);
 
-    const response = await fetch(url, request);
+        if (!token || token === '') {
+            return undefined;
+        }
+        if (response.status === 200 || response.status === 201) {
+            return await response.json();
+        }
+        else {
+            //window.location.href = "https://localhost:3000/register";
 
-    if (!token || token === '') {
-        return undefined;
+            return response.status;
+        }
     }
-    if (response.status === 200 || response.status === 201) {
-        return await response.json();
+    catch (er) {
+        if (er) {
+            console.log(er);
+        }
     }
-    else {
-        //window.location.href = "https://localhost:3000/register";
-        
-        return response.status;
-    }
-
 }

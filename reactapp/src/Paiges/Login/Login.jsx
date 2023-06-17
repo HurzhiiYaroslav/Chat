@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Link, Route, Routes } from 'react-router-dom';
-import { unauthorizedRequest, } from '../../Utils/Utils';
+import { Link} from 'react-router-dom';
+import { unauthorizedRequest } from '../../Utils/Utils';
 
 function LoginPage() {
     const [username, setUsername] = useState('');
@@ -20,7 +20,8 @@ function LoginPage() {
             Password: password
         };
         const response = await unauthorizedRequest("https://localhost:7222/login", "POST", body);
-        localStorage.setItem("accessToken", response.access_token)
+        localStorage.setItem("accessToken", response.access_token);
+        localStorage.setItem("currentuser", response.username);
     };
 
     return (
