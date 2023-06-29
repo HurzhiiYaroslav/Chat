@@ -3,6 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using webapi;
 using webapi.Hubs;
+using webapi.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
@@ -16,19 +17,27 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = "MyAuthServer",
+            ValidIssuer = AuthOptions.ISSUER,
             ValidateAudience = true,
-            ValidAudience = "MyAuthClient",
+            ValidAudience = AuthOptions.AUDIENCE,
             ValidateLifetime = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("mysupersecret_secretkey!123")),
-            ValidateIssuerSigningKey = true,
-
+            IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
+            ValidateIssuerSigningKey = true
         };
     });
-builder.Services.AddCors();
-
+builder.Services.AddLogging(logging =>
+{
+    logging.ClearProviders();
+    logging.AddConsole();
+    logging.AddDebug();
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CORS", builder => builder.WithOrigins("https://localhost:3000").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
+});
 
 var app = builder.Build();
 
@@ -46,9 +55,7 @@ app.UseRouting();
 
 app.UseHttpsRedirection();
 
-app.UseCors(builder => builder.AllowAnyOrigin()
-                            .AllowAnyHeader()
-                            .AllowAnyMethod());
+app.UseCors("CORS");
 
 app.UseAuthentication();
 

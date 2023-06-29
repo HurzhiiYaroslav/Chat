@@ -1,21 +1,3 @@
-export const checkAuth = async (event) => {
-    event.preventDefault();
-    const token = localStorage.getItem("accessToken")
-    try {
-        const response = await fetch("https://localhost:7222/CheckAuth", {
-            method: "GET",
-            headers: { "Accept": "application/json", "Content-Type": "application/json", "Authorization": "Bearer " + token }
-        })
-        const result = await response.json();
-        console.log(result);
-        localStorage.setItem("accessToken", result.access_token)
-    }
-    catch (er) {
-        if (er) {
-            console.log(er);
-        }
-    }
-}
 
 export const unauthorizedRequest = async (url, method, body) => {
     const request = body ? {
@@ -48,7 +30,6 @@ export const unauthorizedRequest = async (url, method, body) => {
 
 export const authorizedRequest = async (url, method, tokenType = 'accessToken', body) => {
     const token = localStorage.getItem(tokenType);
-
     const request = body ? {
         method: method,
         headers: {
@@ -65,16 +46,14 @@ export const authorizedRequest = async (url, method, tokenType = 'accessToken', 
     }
     try {
         const response = await fetch(url, request);
-
-        if (!token || token === '') {
-            return undefined;
+        if (!token || token === ''|| response.status === 401) {
+            return null;
         }
-        if (response.status === 200 || response.status === 201) {
-            return await response.json();
+        else if (response.status === 200 || response.status === 201) {
+            return await response;
         }
         else {
-            //window.location.href = "https://localhost:3000/register";
-
+            localStorage.removeItem("accessToken");
             return response.status;
         }
     }

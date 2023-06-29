@@ -1,30 +1,44 @@
-import React, { useState } from 'react';
-import { Link} from 'react-router-dom';
+import React, { useContext, useState, useEffect } from 'react';
+import { Link, useNavigate} from 'react-router-dom';
 import { unauthorizedRequest } from '../../Utils/Utils';
+import Loading from '../../Components/Loading/Loading';
+import "../../Links";
+import { LoginUrl } from '../../Links';
 
 function LoginPage() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [loading, setloading] = useState(false);
     const handleUsernameChange = (event) => {
         setUsername(event.target.value);
     };
-
     const handlePasswordChange = (event) => {
         setPassword(event.target.value);
     };
-
+    const navigate = useNavigate();
     const handleSubmit = async (event) => {
         event.preventDefault();
+        setloading(true);
         const body = {
             Login: username,
             Password: password
         };
-        const response = await unauthorizedRequest("https://localhost:7222/login", "POST", body);
-        localStorage.setItem("accessToken", response.access_token);
-        localStorage.setItem("currentuser", response.username);
+
+        try {
+            const response = await unauthorizedRequest(LoginUrl, "POST", body);
+            localStorage.setItem("accessToken", response.access_token);
+            localStorage.setItem("currentUser", response.username);
+            setloading(false);
+            navigate("/chat", { replace: true });
+        } catch (error) {
+            // Handle error
+            console.error(error);
+            setloading(false);
+        }
     };
 
     return (
+        <>{loading && <Loading></Loading>}
         <form id="loginform" onSubmit={handleSubmit}>
             <div>
                 <label htmlFor="username">Login:</label>
@@ -46,7 +60,8 @@ function LoginPage() {
             </div>
             <button type="submit">Enter</button>
             <Link to="/register">Register</Link>
-        </form>
+            </form>
+        </>
     );
 }
 

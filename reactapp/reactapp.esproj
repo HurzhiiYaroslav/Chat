@@ -12,8 +12,8 @@
     <BuildOutputFolder>$(MSBuildProjectDirectory)\build</BuildOutputFolder>
   </PropertyGroup>
   <ItemGroup>
-    <Folder Include="src\Components\ChatMessageForm\" />
-    <Folder Include="src\Components\ChatGroupList\" />
-    <Folder Include="src\Context\" />
+    <Folder Include="src\Components\ChatLeft\" />
+    <Folder Include="src\Components\Loading\" />
+    <Folder Include="src\Components\ChatRight\" />
   </ItemGroup>
 </Project>

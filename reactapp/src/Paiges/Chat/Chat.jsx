@@ -1,23 +1,53 @@
 import React, { useState, useEffect } from 'react';
-import ChatMessageForm from '../../Components/ChatMessageForm/ChatMessageForm';
-import ChatMessageList from '../../Components/ChatMessageList/ChatMessageList';
-
-
+import ChatLeft from '../../Components/ChatLeft/ChatLeft';
+import ChatRight from '../../Components/ChatRight/ChatRight';
+import { HubConnectionBuilder } from "@microsoft/signalr"
 
 const Chat = () => {
-    const [messages, setMessages] = useState([]);
+    const [connection, setConnection] = useState(null);
+    const [ChatData, setChatData] = useState([]);
+    const [onlineUsers, setOnlineUsers] = useState([]);
+    useEffect(() => {
+        const connec = new HubConnectionBuilder()
+            .withUrl("https://localhost:7222/chat?username=" + localStorage.getItem("currentUser"), {
+                accessTokenFactory: () => {
+                    const token = localStorage.getItem("accessToken");
+                    return token;
+                }
+            })
+            .build();
+        setConnection(connec);
 
-    const sendMessage = (message) => {
-        // Отправляем сообщение на сервер
-        // ...
+        connec.on("ConnectedUsers", connectedUserList => {
+            setOnlineUsers(connectedUserList);
+        });
 
-        // Добавляем новое сообщение в список сообщений
-        setMessages(messages=>[...messages, message]);
-    };
+        connec.on('UserConnected', (user) => {
+            setOnlineUsers((prevUsers) => [...prevUsers, user[0]]);
+        });
+
+        connec.on('UserDisconnected', (user) => {
+            console.log(user);
+            setOnlineUsers((prevUsers) => prevUsers.filter((u) => u !== user));
+        });
+
+        connec.start()
+            .then(() => {
+                console.log('success');
+            })
+            .catch((error) => {
+                console.error('fail ', error);
+            });
+        return () => {
+            connec.stop();
+        };
+    }, []);
+
+
     return (
         <div className="chat-page">
-            <ChatMessageList messages={messages} />
-            <ChatMessageForm onSendMessage={sendMessage} />
+            <ChatLeft connection={connection} ChatData={ChatData} onlineUsers={onlineUsers }></ChatLeft>
+            <ChatRight connection={connection} ChatData={ChatData} onlineUsers={onlineUsers}></ChatRight>
         </div>
     );
 };

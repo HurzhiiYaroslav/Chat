@@ -7,6 +7,6 @@
         public string Login { get; set; } = "";
         public string Password { get; set; } = "";
         public string Photo { get; set; } = "default";
-        public List<Chat> Chats { get; set; } = new();
+        public List<Group> Groups { get; set; } = new();
     }
 }
