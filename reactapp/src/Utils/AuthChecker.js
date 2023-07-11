@@ -11,7 +11,7 @@ export const checkIfUserIsAuthenticated = () => {
                 },
             })
             .then((response) => {
-                console.log(response.status);
+                //console.log(response.status);
                 if (response.status === 200 || response.status === 201) {
                     resolve(true);
                 } else {
@@ -19,7 +19,7 @@ export const checkIfUserIsAuthenticated = () => {
                 }
             })
             .catch((error) => {
-                console.error(error);
+                //console.error(error);
                 resolve(false);
             });
     });

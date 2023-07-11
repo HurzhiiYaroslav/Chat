@@ -1,5 +1,7 @@
 export const BaseUrl = 'https://localhost:7222';
 
-export const LoginUrl = 'https://localhost:7222/login';
-export const RegisterUrl = 'https://localhost:7222/register';
-export const CheckAuthUrl = 'https://localhost:7222/checkAuth';
+export const LoginUrl = BaseUrl+'/login';
+export const RegisterUrl = BaseUrl +'/register';
+export const CheckAuthUrl = BaseUrl +'/checkAuth';
+export const ChatHubUrl = BaseUrl +'/chat';
+export const ImagesUrl = BaseUrl +'/Images/';

@@ -2,8 +2,8 @@ import React, { useContext, useState, useEffect } from 'react';
 import { Link, useNavigate} from 'react-router-dom';
 import { unauthorizedRequest } from '../../Utils/Utils';
 import Loading from '../../Components/Loading/Loading';
-import "../../Links";
 import { LoginUrl } from '../../Links';
+import "./Login.scss"
 
 function LoginPage() {
     const [username, setUsername] = useState('');

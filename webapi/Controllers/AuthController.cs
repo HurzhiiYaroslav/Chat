@@ -77,13 +77,6 @@ namespace webapi.Controllers
             return Ok(response);
         }
 
-        public class RegData
-        {
-            public string Username { get; set; }
-            public string Login { get; set; }
-            public string Password { get; set; }
-            public IFormFile Image { get; set; }
-        }
 
         [Authorize]
         [HttpGet("checkAuth")]
@@ -91,7 +84,13 @@ namespace webapi.Controllers
         {
             return Ok();
         }
-        
+        public class RegData
+        {
+            public string Username { get; set; }
+            public string Login { get; set; }
+            public string Password { get; set; }
+            public IFormFile Image { get; set; }
+        }
     }
     
 }

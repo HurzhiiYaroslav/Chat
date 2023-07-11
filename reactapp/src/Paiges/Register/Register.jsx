@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import "../../Links";
+import "./Register.scss"
 import Loading from '../../Components/Loading/Loading';
 import { RegisterUrl } from '../../Links';
 
@@ -67,7 +67,7 @@ function RegisterPage() {
                 <div>
                     <label htmlFor="login">Login</label>
                     <input
-                        type="login"
+                        type="text"
                         id="login"
                         value={login}
                         onChange={(event) => setLogin(event.target.value)}

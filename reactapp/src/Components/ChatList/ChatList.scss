@@ -1,0 +1,47 @@
+
+.ListWrapper {
+    width: 100%;
+}
+
+.Bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.BarField {
+    padding: 5px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+}
+
+.BarBtns {
+    margin-left: 10px;
+}
+
+.btn {
+    width: 100%;
+    padding: 2px 5px;
+    font-size: 16px;
+    border: 1px solid DimGrey;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn.active {
+    background-color: #ccc;
+}
+
+.List {
+    display: flex;
+    flex-direction: column;
+
+}
+
+
+
+
+
+

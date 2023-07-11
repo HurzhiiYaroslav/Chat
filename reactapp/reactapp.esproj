@@ -12,6 +12,9 @@
     <BuildOutputFolder>$(MSBuildProjectDirectory)\build</BuildOutputFolder>
   </PropertyGroup>
   <ItemGroup>
+    <Folder Include="src\Components\Cards\Dialog\" />
+    <Folder Include="src\Components\Cards\Group\" />
+    <Folder Include="src\Components\Cards\Channel\" />
     <Folder Include="src\Components\ChatLeft\" />
     <Folder Include="src\Components\Loading\" />
     <Folder Include="src\Components\ChatRight\" />

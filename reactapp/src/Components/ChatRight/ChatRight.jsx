@@ -1,22 +1,22 @@
-import React, {useEffect,useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { ImagesUrl } from '../../Links';
+import "./ChatRight.scss"
 
-function ChatRight(connection, ChatData, onlineUsers) {
-    useEffect(() => {
-        if (connection !== null) {
-
-            connection.on("", connectedUserList => {
-
-            });
-
-        }
-    }, [connection]);
+function ChatRight({ connection, ChatData, onlineUsers, currentChat, setCurrentChat } ) {
+    
 
 
     return (
         <div className="rightSide">
-            <div>
+            <div className="messageBox">
+                
             </div>
-            <div>
+            <div className="AboutBox">
+                
+            </div>
+            <div className="InputBox">
+                <input className="inputField"></input>
+                <button className="sendButton"></button>
             </div>
         </div>
     );

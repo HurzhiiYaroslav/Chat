@@ -1,24 +1,31 @@
-import React, {useEffect,useState } from 'react';
-function ChatLeft(connection, ChatData, onlineUsers) {
+import React, { useEffect, useState } from 'react';
+import { ImagesUrl } from '../../Links';
+import ChatList from '../ChatList/ChatList'
+import "./ChatLeft.scss"
 
-
-    useEffect(() => {
-        if (connection !== null) {
-
-            connection.on("", connectedUserList => {
-
-            });
-
-        }
-    }, [connection]);
-
+function ChatLeft({ connection, chatData, onlineUsers, currentChat, setCurrentChat }) {
 
     return (
         <div className="leftSide">
-            <div className="">
+            <div className="User">
+                <div className="UserName">
+                    {chatData && chatData.user && chatData.user.name ? chatData.user.name : "name"}
+                </div>
+                {chatData && chatData.user && chatData.user.photo ? (
+                    <img
+                        className="UserPhoto"
+                        src={ImagesUrl + chatData.user.photo}
+                        alt="YourAvatar"
+                    />
+                ) : (
+                    "photo"
+                )}
             </div>
-            <div className="">
-            </div>
+            <ChatList connection={connection}
+                chatData={chatData}
+                onlineUsers={onlineUsers}
+                currentChat={currentChat}
+                setCurrentChat={setCurrentChat} />
         </div>
     );
 }

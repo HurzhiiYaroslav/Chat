@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import ChatLeft from '../../Components/ChatLeft/ChatLeft';
 import ChatRight from '../../Components/ChatRight/ChatRight';
+import Loading from '../../Components/Loading/Loading';
+import { ChatHubUrl } from '../../Links';
 import { HubConnectionBuilder } from "@microsoft/signalr"
 
 const Chat = () => {
     const [connection, setConnection] = useState(null);
-    const [ChatData, setChatData] = useState([]);
+    const [chatData, setChatData] = useState({
+        user:null,
+        chats :[]
+    });
     const [onlineUsers, setOnlineUsers] = useState([]);
+    const [currentChat, setCurrentChat] = useState(null);
     useEffect(() => {
         const connec = new HubConnectionBuilder()
-            .withUrl("https://localhost:7222/chat?username=" + localStorage.getItem("currentUser"), {
+            .withUrl(ChatHubUrl+ "?username=" + localStorage.getItem("currentUser"), {
                 accessTokenFactory: () => {
                     const token = localStorage.getItem("accessToken");
                     return token;
@@ -31,9 +37,13 @@ const Chat = () => {
             setOnlineUsers((prevUsers) => prevUsers.filter((u) => u !== user));
         });
 
+        connec.on('Tset', (data) => {
+            setChatData(JSON.parse(data));
+        });
+
         connec.start()
             .then(() => {
-                console.log('success');
+                //connec.invoke("");
             })
             .catch((error) => {
                 console.error('fail ', error);
@@ -41,13 +51,38 @@ const Chat = () => {
         return () => {
             connec.stop();
         };
+        
     }, []);
 
+    useEffect(() => {
+        console.log(chatData);
+        if (chatData.user !== null && chatData.user.name !== null) {
+            console.log(chatData.user.name);
+        }
+    }, [chatData]);
 
     return (
         <div className="chat-page">
-            <ChatLeft connection={connection} ChatData={ChatData} onlineUsers={onlineUsers }></ChatLeft>
-            <ChatRight connection={connection} ChatData={ChatData} onlineUsers={onlineUsers}></ChatRight>
+            {chatData && chatData.user && chatData.user.name ? (
+                <>
+                    <ChatLeft
+                        connection={connection}
+                        chatData={chatData}
+                        onlineUsers={onlineUsers}
+                        currentChat={currentChat}
+                        setCurrentChat={setCurrentChat}
+                    />
+                    <ChatRight
+                        connection={connection}
+                        chatData={chatData}
+                        onlineUsers={onlineUsers}
+                        currentChat={currentChat}
+                        setCurrentChat={setCurrentChat}
+                    />
+                </>
+            ) : (
+                    <Loading></Loading>
+            )}
         </div>
     );
 };
