@@ -43,10 +43,10 @@ function RegisterPage() {
             .then(function (response) {
                 localStorage.setItem("accessToken", response.access_token);
                 localStorage.setItem("currentUser", response.username);
-                console.log("Файл и текстовые данные успешно отправлены");
+                console.log("success");
             })
             .catch(function (error) {
-                console.error("Ошибка при отправке файла и текстовых данных", error);
+                console.error("error - ", error);
             });
         navigate("/chat", { replace: true });
         setLoading(false);

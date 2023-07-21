@@ -36,7 +36,7 @@ function ChatList({ connection, chatData, onlineUsers, currentChat, setCurrentCh
 
             const timeout = setTimeout(() => {
                 connection.invoke("SearchChats", fieldInput);
-            }, 2000);
+            }, 1000);
 
             setTimeoutId(timeout);
         }
@@ -56,30 +56,30 @@ function ChatList({ connection, chatData, onlineUsers, currentChat, setCurrentCh
                     chatData.chats.length > 0 ? (
                         chatData.chats.filter(Filter).map((item) => {
                             if (item.Companion) {
-                                return <DialogCard item={item} onlineUsers={onlineUsers} connection={connection} setCurrentChat={setCurrentChat }/>
+                                return <DialogCard key={item.Id} item={item} onlineUsers={onlineUsers} connection={connection} setCurrentChat={setCurrentChat} />;
+                            } else if (item.Users) {
+                                return <GroupCard key={item.Id} item={item} onlineUsers={onlineUsers} connection={connection} setCurrentChat={setCurrentChat} />;
                             }
-                            else if (item.Users) {
-                                return <GroupCard item={item} onlineUsers={onlineUsers} connection={connection} setCurrentChat={setCurrentChat}/>
-                            }
-
+                            return null;
                         })
                     ) : (
                         <div>empty</div>
                     )
-                ) : listMode === "Search" ? (<>
+                ) : listMode === "Search" ? (
+                    <>
                         <div className="FoundUsers">
-                            {foundData && foundData.Users && foundData.Users.length>0 ? (
+                            {foundData && foundData.Users && foundData.Users.length > 0 ? (
                                 foundData.Users.map((item) => {
-                                    return <SearchDialogCard item={item} onlineUsers={onlineUsers} connection={connection} setCurrentChat={setCurrentChat} />
+                                    return <SearchDialogCard key={item.Id} item={item} onlineUsers={onlineUsers} connection={connection} setCurrentChat={setCurrentChat} />;
                                 })
-                            ):(<div>empty</div>)
-
-                            }
+                            ) : (
+                                <div>empty</div>
+                            )}
                         </div>
-                         <div className="FoundGroups">
+                        <div className="FoundGroups">
                             <div>in development</div>
                         </div>
-                    </> 
+                    </>
                 ) : (
                     <div>empty</div>
                 )}

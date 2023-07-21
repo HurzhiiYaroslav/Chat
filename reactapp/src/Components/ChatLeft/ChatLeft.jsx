@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ImagesUrl } from '../../Links';
+import { AvatarUrl } from '../../Links';
 import ChatList from '../ChatList/ChatList'
 import "./ChatLeft.scss"
 
@@ -7,14 +7,14 @@ function ChatLeft({ connection, chatData, onlineUsers, currentChat, setCurrentCh
 
     return (
         <div className="leftSide">
-            <div className="User">
+            <div className="UserInfo">
                 <div className="UserName">
-                    {chatData && chatData.user && chatData.user.name ? chatData.user.name : "name"}
+                    {chatData && chatData.user && chatData.user.Name ? chatData.user.Name : "name"}
                 </div>
-                {chatData && chatData.user && chatData.user.photo ? (
+                {chatData && chatData.user && chatData.user.Photo ? (
                     <img
                         className="UserPhoto"
-                        src={ImagesUrl + chatData.user.photo}
+                        src={AvatarUrl + chatData.user.Photo}
                         alt="YourAvatar"
                     />
                 ) : (

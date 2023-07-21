@@ -2,10 +2,11 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using webapi.Utils;
 using webapi.Entities;
-using static webapi.Controllers.AuthController;
+using System.Text.Json.Nodes;
 
 namespace webapi.Hubs
 {
@@ -17,6 +18,7 @@ namespace webapi.Hubs
         private ApplicationContext db;
         private static Dictionary<string, string> connectedUsers = new Dictionary<string, string>();
 
+
         public ChatHub(ApplicationContext db)
         {
             this.db = db;
@@ -27,12 +29,28 @@ namespace webapi.Hubs
             var username = Context.GetHttpContext().Request.Query["username"];
             connectedUsers[Context.ConnectionId] = username;
             await Clients.Others.SendAsync("UserConnected", username);
+            await Test();
+            var user = await db.Users.FirstOrDefaultAsync(u => u.Id.ToString() == username.ToString().ToUpper());
+            if (user != null) { 
+
+            List<Chat> groupNames = db.GetChatsForUser(user);
+            await AddUserToGroups(Context.ConnectionId,groupNames);
             var connectedUserList = connectedUsers.Values.ToList();
-            //await Test();
-            var u = JSONConvertor.ChatDataJson(await db.Users.FirstOrDefaultAsync(u => u.Id.ToString() == username.ToString().ToUpper()),db);
-            await Clients.Client(Context.ConnectionId).SendAsync("Tset", u);
+            var u = JSONConvertor.ChatDataJson(user,db);
+            await Clients.Client(Context.ConnectionId).SendAsync("UserData", u);
             await Clients.Client(Context.ConnectionId).SendAsync("ConnectedUsers", connectedUserList);
+            }
+            else
+            {
+                await Clients.Client(Context.ConnectionId).SendAsync("Relogin");
+            }
             await base.OnConnectedAsync();
+        }
+
+        public async Task AddUserToGroups(string userId, List<Chat> chats)
+        {
+            var tasks = chats.Select(chat => Groups.AddToGroupAsync(userId, chat.Id.ToString()));
+            await Task.WhenAll(tasks);
         }
 
         public async Task SearchChats(string userInput)
@@ -41,7 +59,6 @@ namespace webapi.Hubs
             var user = db.Users.Include(u=>u.Dialogs).FirstOrDefault(u => u.Id.ToString() == username.ToString().ToUpper());
             await Clients.Client(Context.ConnectionId).SendAsync("chatsSearched", JSONConvertor.UserSearchJson(user,userInput,db));
         }
-
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
@@ -53,6 +70,7 @@ namespace webapi.Hubs
 
         private async Task Test()
         {
+            try { 
             var user = await db.Users.FirstOrDefaultAsync(u => u.Name == "Tom");
             var user1 = await db.Users.FirstOrDefaultAsync(u => u.Name == "Bob");
 
@@ -66,6 +84,11 @@ namespace webapi.Hubs
             gr.Users.Add(user);
 
             await db.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Allright");
+            }
         }
     }
 

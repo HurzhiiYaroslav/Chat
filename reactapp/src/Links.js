@@ -4,4 +4,6 @@ export const LoginUrl = BaseUrl+'/login';
 export const RegisterUrl = BaseUrl +'/register';
 export const CheckAuthUrl = BaseUrl +'/checkAuth';
 export const ChatHubUrl = BaseUrl +'/chat';
-export const ImagesUrl = BaseUrl +'/Images/';
+export const AvatarUrl = BaseUrl + '/Avatars/';
+export const MediaUrl = BaseUrl + '/Media/';
+export const SendMessageUrl = BaseUrl + '/SendMessage';

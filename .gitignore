@@ -9,8 +9,10 @@
 *.user
 *.userosscache
 *.sln.docstates
-webapi/wwwroot/Images/*
-!webapi/wwwroot/Images/default.jpg
+webapi/wwwroot/Avatars/*
+webapi/wwwroot/Media/*
+!webapi/wwwroot/Avatars/default.jpg
+webapi/Chatapp.db
 
 webapi/Chatapp.db
 # User-specific files (MonoDevelop/Xamarin Studio)

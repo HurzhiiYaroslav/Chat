@@ -18,5 +18,8 @@
     <Folder Include="src\Components\ChatLeft\" />
     <Folder Include="src\Components\Loading\" />
     <Folder Include="src\Components\ChatRight\" />
+    <Folder Include="src\Components\AttachMediaModal\" />
+    <Folder Include="src\Components\Modal\" />
+    <Folder Include="src\Components\AttachedMedia\" />
   </ItemGroup>
 </Project>

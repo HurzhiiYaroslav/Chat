@@ -61,10 +61,6 @@ namespace webapi.Controllers
 
                     user.Photo = fileName;
                 }
-                else
-                {
-                    return BadRequest("No image attached");
-                }
             await _db.Users.AddAsync(user);
             await _db.SaveChangesAsync();
 

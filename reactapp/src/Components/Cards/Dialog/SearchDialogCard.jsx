@@ -1,5 +1,5 @@
 import React from 'react';
-import { ImagesUrl } from "../../../Links";
+import { AvatarUrl } from "../../../Links";
 import "./DialogCard.scss"
 
 function SearchDialogCard({ item, onlineUsers, connection, setCurrentChat }) {
@@ -10,7 +10,7 @@ function SearchDialogCard({ item, onlineUsers, connection, setCurrentChat }) {
         <div className="PhotoBox">
             <img
                 className="CompanionPhoto"
-                src={ImagesUrl + item.Photo}
+                src={AvatarUrl + item.Photo}
                 alt="Avatar"
             />
             <div className={`marker ${onlineUsers.includes(item.Id) ? "online" : "offline"}`} ></div>

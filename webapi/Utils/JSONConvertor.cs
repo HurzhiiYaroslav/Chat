@@ -67,8 +67,8 @@ namespace webapi.Utils
 
             return new JObject
             {
-                {"name",u.Name },
-                {"photo",u.Photo }
+                {"Name",u.Name },
+                {"Photo",u.Photo }
             };
         }
         private static JArray userChats(User u, ApplicationContext db)
@@ -105,6 +105,7 @@ namespace webapi.Utils
         {
             return db.Dialogs
                 .Include(d => d.Messages)
+                .ThenInclude(m => m.Files)
                 .FirstOrDefault(d => d.Id == chatId);
         }
 
@@ -112,6 +113,7 @@ namespace webapi.Utils
         {
             return db.Groups
                 .Include(g => g.Messages)
+                .ThenInclude(m => m.Files)
                 .FirstOrDefault(g => g.Id == chatId);
         }
 
@@ -129,16 +131,38 @@ namespace webapi.Utils
             }
             return arr;
         }
-        private static JArray MessagesToJArray(List<Message> a)
+        private static JArray MessagesToJArray(List<Message> messages)
         {
             var arr = new JArray();
-            foreach (Message m in a)
+            foreach (Message mes in messages)
+            {
+                arr.Add(MessageTojObject(mes));
+            }
+            return arr;
+        }
+
+        public static JObject MessageTojObject(Message mes)
+        {
+            var jObject = new JObject();
+            jObject["Id"] = mes.Id;
+            jObject["sender"] = mes.Sender.Id;
+            jObject["content"] = mes.Content;
+            jObject["time"] = mes.Timestamp;
+            jObject["Files"] = FilesToJArray(mes.Files);
+
+            return jObject;
+        }
+
+        private static JArray FilesToJArray(ICollection<Entities.File> files)
+        {
+            var arr = new JArray();
+            foreach (Entities.File file in files)
             {
                 var jObject = new JObject();
-                jObject["Id"] = m.Id;
-                jObject["sender"] = m.Sender.Id;
-                jObject["content"] = m.Content;
-                jObject["time"] = m.Timestamp;
+                jObject["Id"] = file.Id;
+                jObject["Name"] = file.Name;
+                jObject["Type"] = file.Type;
+                jObject["Path"] = file.Path;
                 arr.Add(jObject);
             }
             return arr;

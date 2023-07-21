@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System;
 using webapi.Entities;
 using webapi.Utils;
 
@@ -29,6 +30,8 @@ namespace webapi {
                 .HasKey(m => m.Id);
             modelBuilder.Entity<Message>()
                 .HasOne(m => m.Sender);
+            modelBuilder.Entity<Message>()
+                .HasMany(m=>m.Files);
 
             modelBuilder.Entity<Chat>()
                 .HasKey(c => c.Id);
@@ -70,6 +73,20 @@ namespace webapi {
                 new Group { Title = "uihui1"}
                     );
         }
+        public Chat GetChatById(string Id)
+        {
+            if (Dialogs.FirstOrDefault(d => d.Id.ToString() == Id.ToUpper()) != null)
+            {
+                return Dialogs.FirstOrDefault(d => d.Id.ToString() == Id.ToUpper());
+            }
+            else if (Groups.FirstOrDefault(d => d.Id.ToString() == Id.ToUpper()) != null)
+            {
+                return Groups.FirstOrDefault(d => d.Id.ToString() == Id.ToUpper());
+            }
+            return null;
+
+        }
+
         public List<Chat> GetChatsForUser(User user)
         {
             var dialogs = Dialogs
