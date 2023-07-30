@@ -2,9 +2,10 @@
     padding: 10px;
     background-color: #f5f5f5;
     border-radius: 8px;
-    border: 1px solid DimGrey;
+    border: 1px solid dimgray;
     cursor: pointer;
     transition: background-color 0.3s;
+    margin-bottom: 5px;
 
     &:hover {
         background-color: #ebebeb;
@@ -13,4 +14,15 @@
     &:active {
         background-color: #dcdcdc;
     }
+}
+
+.GroupTitle {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.GroupMembers {
+    font-size: 14px;
+    color: darkgray;
 }

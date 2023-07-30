@@ -31,8 +31,8 @@ function LoginPage() {
             setloading(false);
             navigate("/chat", { replace: true });
         } catch (error) {
-            // Handle error
-            console.error(error);
+            
+            console.error("An error occurred:", error);
             setloading(false);
         }
     };

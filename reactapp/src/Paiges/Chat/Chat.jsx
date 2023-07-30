@@ -14,7 +14,7 @@ const Chat = () => {
         chats :[]
     });
     const [onlineUsers, setOnlineUsers] = useState([]);
-    const [currentChat, setCurrentChat] = useState(null);
+    const [currentChatId, setCurrentChatId] = useState(null);
 
     useEffect(() => {
         const connec = new HubConnectionBuilder()
@@ -43,6 +43,75 @@ const Chat = () => {
         connec.on('UserData', (data) => {
             console.log(data);
             setChatData(JSON.parse(data));
+        });
+
+        connec.on('newMember', (data) => {
+            const member = JSON.parse(data);
+            setChatData((prevChatData) => {
+                const updatedChats = prevChatData.chats.map((chat) => {
+                    if (chat.Id === member.chatId) {
+                        return {
+                            ...chat,
+                            Users: [...chat.Users, member.User],
+                        };
+                    }
+                    return chat;
+                });
+
+                return {
+                    ...prevChatData,
+                    chats: updatedChats,
+                };
+            });
+        });
+
+        connec.on('memberLeftTheChat', (data) => {
+            const member = JSON.parse(data);
+            if (member.User.Id === localStorage.getItem("currentUser")) {
+                setChatData((prevChatData) => {
+                    const updatedChats = prevChatData.chats.filter((chat) => chat.Id !== member.chatId);
+
+                    return {
+                        ...prevChatData,
+                        chats: updatedChats,
+                    };
+                });
+            }
+            else {
+                setChatData((prevChatData) => {
+                    const updatedChats = prevChatData.chats.map((chat) => {
+                        if (chat.Id === member.chatId) {
+                            const updatedUsers = chat.Users.filter((user) => user.Id !== member.User.Id);
+
+                            return {
+                                ...chat,
+                                Users: updatedUsers,
+                            };
+                        }
+                        return chat;
+                    });
+
+                    return {
+                        ...prevChatData,
+                        chats: updatedChats,
+                    };
+                });
+            }
+        });
+
+        connec.on('setError', (error) => {
+            console.log(error);
+        });
+
+        connec.on('newChat', (dialog) => {
+            console.log(JSON.parse(dialog));
+            setChatData((prevChatData) => {
+                return {
+                    ...prevChatData,
+                    chats: [...prevChatData.chats, JSON.parse(dialog)],
+                };
+            });
+            setCurrentChatId(JSON.parse(dialog).Id);
         });
 
         connec.on('ReciveMessage', (data,chatId) => {
@@ -83,10 +152,6 @@ const Chat = () => {
         
     }, []);
 
-    useEffect(() => {
-        console.log(chatData);
-    }, [chatData]);
-
     return (
         <div className="chat-page">
             {chatData && chatData.user && chatData.user.Name ? (
@@ -95,15 +160,15 @@ const Chat = () => {
                         connection={connection}
                         chatData={chatData}
                         onlineUsers={onlineUsers}
-                        currentChat={currentChat}
-                        setCurrentChat={setCurrentChat}
+                        currentChatId={currentChatId}
+                        setCurrentChatId={setCurrentChatId}
                     />
                     <ChatRight
                         connection={connection}
                         chatData={chatData}
                         onlineUsers={onlineUsers}
-                        currentChat={currentChat}
-                        setCurrentChat={setCurrentChat}
+                        currentChatId={currentChatId}
+                        setCurrentChatId={setCurrentChatId}
                     />
                 </>
             ) : (

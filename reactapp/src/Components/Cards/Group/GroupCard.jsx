@@ -1,11 +1,15 @@
 import React from 'react';
 import "./GroupCard.scss"
 
-function GroupCard({ item, connection, setCurrentChat }) {
+function GroupCard({ item, connection, setCurrentChatId }) {
+    const handleClick = () => {
+        setCurrentChatId(item.Id);
+    };
+
     return ( 
-        <div key={item.Id} className="GroupItem" onClick={() => setCurrentChat(item.Id)}>
-            {item.Title}
-            {item.Users.length}
+        <div className="GroupItem" onClick={handleClick}>
+            <div className="GroupTitle">{item.Title}</div>
+            <div className="GroupMembers">{item.Users.length} members</div>
         </div>
     );
 }

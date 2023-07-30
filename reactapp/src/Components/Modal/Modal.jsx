@@ -40,7 +40,7 @@ const Modal = ({
                                         }}
                                         className="close-animate"
                                     >
-                                        close
+                                        X
                                     </span>
                                 </div>
                             )}

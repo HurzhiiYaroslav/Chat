@@ -57,8 +57,6 @@ namespace webapi {
             modelBuilder.Entity<Group>()
                 .HasMany(b => b.Messages);
 
-            
-
             SeedData(modelBuilder);
         }
         protected void SeedData(ModelBuilder modelBuilder)
@@ -73,18 +71,20 @@ namespace webapi {
                 new Group { Title = "uihui1"}
                     );
         }
-        public Chat GetChatById(string Id)
+        public async Task<Chat> GetChatById(string Id)
         {
-            if (Dialogs.FirstOrDefault(d => d.Id.ToString() == Id.ToUpper()) != null)
+            Id = Id.ToUpper();
+            var dialog = await Dialogs.FirstOrDefaultAsync(d => d.Id.ToString() == Id);
+            if (dialog != null)
             {
-                return Dialogs.FirstOrDefault(d => d.Id.ToString() == Id.ToUpper());
+                return dialog;
             }
-            else if (Groups.FirstOrDefault(d => d.Id.ToString() == Id.ToUpper()) != null)
+            var group = await Groups.FirstOrDefaultAsync(g => g.Id.ToString() == Id);
+            if (group != null)
             {
-                return Groups.FirstOrDefault(d => d.Id.ToString() == Id.ToUpper());
+                return group;
             }
             return null;
-
         }
 
         public List<Chat> GetChatsForUser(User user)

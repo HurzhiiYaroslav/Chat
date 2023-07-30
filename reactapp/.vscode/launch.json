@@ -14,6 +14,21 @@
       "name": "localhost (Chrome)",
       "url": "https://localhost:3000",
       "webRoot": "${workspaceFolder}"
+    },
+    {
+      "type": "pwa-opera",
+      "request": "launch",
+      "name": "localhost (Opera)",
+      "url": "https://localhost:3000",
+      "webRoot": "${workspaceFolder}",
+      "runtimeExecutable": "opera",
+      "runtimeArgs": [
+        "--remote-debugging-port=9222"
+      ],
+      "port": 3000,
+      "sourceMapPathOverrides": {
+        "webpack:///*": "${webRoot}/*"
+      }
     }
   ]
 }

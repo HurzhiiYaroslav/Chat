@@ -3,7 +3,7 @@ import { AvatarUrl } from '../../Links';
 import ChatList from '../ChatList/ChatList'
 import "./ChatLeft.scss"
 
-function ChatLeft({ connection, chatData, onlineUsers, currentChat, setCurrentChat }) {
+function ChatLeft({ connection, chatData, onlineUsers, currentChatId, setCurrentChatId }) {
 
     return (
         <div className="leftSide">
@@ -24,8 +24,8 @@ function ChatLeft({ connection, chatData, onlineUsers, currentChat, setCurrentCh
             <ChatList connection={connection}
                 chatData={chatData}
                 onlineUsers={onlineUsers}
-                currentChat={currentChat}
-                setCurrentChat={setCurrentChat} />
+                currentChatId={currentChatId}
+                setCurrentChatId={setCurrentChatId} />
         </div>
     );
 }

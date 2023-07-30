@@ -1,19 +1,21 @@
 import React from 'react';
+import { useEffect } from 'react';
 import { AvatarUrl } from "../../../Links";
 import "./DialogCard.scss"
 
-function DialogCard({ item, onlineUsers, connection, setCurrentChat }) {
+function DialogCard({ item, onlineUsers, func }) {
+    const user = item.Companion ? item.Companion : item;
     return (
-        <div key={item.Id} className="DialogItem" onClick={() => setCurrentChat(item.Id)}>
+        <div key={item.Id} className="DialogItem" onClick={() => func(item.Id) }>
             <div className="PhotoBox">
                 <img
                     className="CompanionPhoto"
-                    src={AvatarUrl + item.Companion.Photo}
+                    src={AvatarUrl + user.Photo}
                     alt="Avatar"
                 />
-                <div className={`marker ${onlineUsers.includes(item.Companion.Id) ? "online" : "offline"}`} ></div>
+                <div className={`marker ${onlineUsers.includes(user.Id) ? "online" : "offline"}`} ></div>
             </div>
-            {item.Companion.Name}
+            {user.Name}
         </div>
     );
 }

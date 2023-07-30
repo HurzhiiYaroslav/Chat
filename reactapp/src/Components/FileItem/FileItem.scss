@@ -1,0 +1,74 @@
+.FileItem {
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 5px;
+    margin: 3px;
+    max-width: 400px;
+
+    .fileName {
+        width: 100%;
+        word-wrap: break-word;
+    }
+}
+
+.Btn {
+    margin: 3px;
+    padding: 3px 5px;
+    font-size: 12px;
+    border-radius: 5px;
+    border: 1px solid grey;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+
+    &:hover {
+        background-color: #0056b3;
+    }
+
+    &:active {
+        background-color: #00396b;
+    }
+}
+
+.Download {
+    background-color: #4caf50;
+    color: white;
+
+    &:hover {
+        background-color: #45a049;
+    }
+
+    &:active {
+        background-color: #3e8743;
+    }
+}
+
+.View {
+    background-color: #007bff;
+    color: white;
+
+    &:hover {
+        background-color: #0056b3;
+    }
+
+    &:active {
+        background-color: #00396b;
+    }
+}
+
+.View.active {
+    background-color: #dc3545;
+
+    &:hover {
+        background-color: #c82333;
+    }
+
+    &:active {
+        background-color: #a71d2a;
+    }
+}
+
+.attachedVideo {
+    width: 100%;
+    border-radius: 5px;
+    margin-top: 5px;
+}

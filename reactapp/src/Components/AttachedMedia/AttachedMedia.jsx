@@ -1,21 +1,27 @@
 import React from 'react';
+import { useEffect } from 'react';
 import "./AttachedMedia.scss"
 
 function AttachedMedia({ mesFiles, setMesFiles }) {
-    if (mesFiles && mesFiles.length > 0) {
-        if (Array.isArray(mesFiles)) {
-            return (
-                <div className="AttachedMedia">
-                    {mesFiles.map((item) => (
-                        <div className="mediaItem" key={item.Id}>
-                            {item.name}
-                        </div>
-                    ))}
-                </div>
-            );
-        }
+    const handleRemoveFile = (file) => {
+        setMesFiles((prevFiles) => prevFiles.filter((item) => item !== file));
+    };
+
+    //useEffect(() => { console.log(mesFiles)},[mesFiles])
+
+    if (mesFiles && mesFiles.length > 0 && Array.isArray(mesFiles)) {
+        return (
+            <div className="AttachedMedia">
+                {mesFiles.map((item,index) => (
+                    <div className="mediaItem" key={index}>
+                        {item.name}
+                        <button className="removeButton" onClick={() => handleRemoveFile(item)}>Remove</button>
+                    </div>
+                ))}
+            </div>
+        );
     } else {
-        return <div>no attached files</div>;
+        return <></>;
     }
 }
 

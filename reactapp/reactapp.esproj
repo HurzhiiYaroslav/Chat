@@ -21,5 +21,7 @@
     <Folder Include="src\Components\AttachMediaModal\" />
     <Folder Include="src\Components\Modal\" />
     <Folder Include="src\Components\AttachedMedia\" />
+    <Folder Include="src\Components\FileItem\" />
+    <Folder Include="src\Components\AboutBox\" />
   </ItemGroup>
 </Project>

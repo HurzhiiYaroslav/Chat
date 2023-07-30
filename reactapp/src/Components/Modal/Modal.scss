@@ -24,7 +24,7 @@
                 animation: fade-out ease 0.3s;
                 position: absolute;
                 right: 1vw;
-                top: 1vw;
+                top: 0vw;
 
                 svg {
                     width: 1vw;
@@ -44,38 +44,26 @@
     width: 100vw;
     height: 100vh;
     position: fixed;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index:1;
 }
 
 @keyframes show-modal {
     0% {
-        opacity: 0;
         transform: translate(-50%, -50%) scale(0);
     }
 
     60% {
-        opacity: 1;
         transform: translate(-50%, -50%) scale(1.1);
     }
 
     80% {
-        opacity: 1;
         transform: translate(-50%, -50%) scale(0.95);
     }
 
     100% {
-        opacity: 1;
         transform: translate(-50%, -50%) scale(1);
-    }
-}
-
-
-
-@keyframes fade-in {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
     }
 }

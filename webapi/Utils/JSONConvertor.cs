@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
+using System;
 using webapi.Entities;
 
 namespace webapi.Utils
@@ -35,7 +36,6 @@ namespace webapi.Utils
                 var foundUsers = db.Users.Where(u => u.Name.Contains(userInput) && u!=user).ToList();
                 var companions = new List<User>();
                 var Dialogs = db.Dialogs.Where(d=>d.User1==user || d.User2 == user).ToList();
-                Console.WriteLine("_______________________"+Dialogs.Count());
                 foreach (var dialog in Dialogs)
                 {
                     if (dialog.User1 == user)
@@ -82,17 +82,12 @@ namespace webapi.Utils
                 if (db.Dialogs.FirstOrDefault(d => d.Id == chat.Id) != null)
                 {
                     var dialog = GetDialog(db, chat.Id);
-                    jObject["Id"] = dialog.Id;
-                    jObject["Companion"] = dialog.CompaionInfo(u);
-                    jObject["Messages"] = MessagesToJArray(dialog.Messages);
+                    jObject = DialogToJObject(dialog,u);
                 }
                 else if(db.Groups.FirstOrDefault(d => d.Id == chat.Id) != null)
                 {
                     var group = GetGroup(db, chat.Id);
-                    jObject["Id"] = group.Id;
-                    jObject["Title"] = group.Title;
-                    jObject["Users"] = UsersToJArray(group.Users);
-                    jObject["Messages"] = MessagesToJArray(group.Messages);
+                    jObject = GroupToJObject(group);
                 }
 
 
@@ -101,10 +96,29 @@ namespace webapi.Utils
             return chatArray;
         }
 
+        public static JObject GroupToJObject(Group group)
+        {
+            var jObject = new JObject();
+            jObject["Id"] = group.Id;
+            jObject["Title"] = group.Title;
+            jObject["Users"] = UsersToJArray(group.Users);
+            jObject["Messages"] = MessagesToJArray(group.Messages);
+            return jObject;
+        }
+
+        public static JObject DialogToJObject(Dialog dialog,User u)
+        {
+            var jObject = new JObject();
+            jObject["Id"] = dialog.Id;
+            jObject["Companion"] = dialog.CompaionInfo(u);
+            jObject["Messages"] = MessagesToJArray(dialog.Messages);
+            return jObject;
+        }
+
         private static Dialog GetDialog(ApplicationContext db, Guid chatId)
         {
             return db.Dialogs
-                .Include(d => d.Messages)
+                .Include(d => d.Messages.OrderBy(m => m.Timestamp))
                 .ThenInclude(m => m.Files)
                 .FirstOrDefault(d => d.Id == chatId);
         }
@@ -112,7 +126,7 @@ namespace webapi.Utils
         private static  Group GetGroup(ApplicationContext db, Guid chatId)
         {
             return db.Groups
-                .Include(g => g.Messages)
+                .Include(g => g.Messages.OrderBy(m => m.Timestamp))
                 .ThenInclude(m => m.Files)
                 .FirstOrDefault(g => g.Id == chatId);
         }
@@ -123,13 +137,19 @@ namespace webapi.Utils
             var arr = new JArray();
             foreach (User u in a)
             {
-                var jObject = new JObject();
-                jObject["Id"] = u.Id;
-                jObject["Name"] = u.Name;
-                jObject["Photo"] = u.Photo;
+                var jObject = userToJObject(u);
                 arr.Add(jObject);
             }
             return arr;
+        }
+
+        public static JObject userToJObject(User u)
+        {
+            var jObject = new JObject();
+            jObject["Id"] = u.Id;
+            jObject["Name"] = u.Name;
+            jObject["Photo"] = u.Photo;
+            return jObject;
         }
         private static JArray MessagesToJArray(List<Message> messages)
         {

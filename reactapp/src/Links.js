@@ -7,3 +7,4 @@ export const ChatHubUrl = BaseUrl +'/chat';
 export const AvatarUrl = BaseUrl + '/Avatars/';
 export const MediaUrl = BaseUrl + '/Media/';
 export const SendMessageUrl = BaseUrl + '/SendMessage';
+export const DownloadUrl = BaseUrl + '/Download';
