@@ -15,6 +15,7 @@ function ChatList({ connection, chatData, onlineUsers, currentChatId, setCurrent
         else if (item.Title) {
             return item.Title.toLowerCase().includes(fieldInput.toLowerCase());
         }
+        return item;
     }
 
     const [isClickable, setIsClickable] = useState(true);
@@ -67,10 +68,10 @@ function ChatList({ connection, chatData, onlineUsers, currentChatId, setCurrent
                 {listMode === "Filter" ? (
                     chatData.chats.length > 0 ? (
                         chatData.chats.filter(Filter).map((item) => {
-                            if (item.Companion) {
+                            if (item.Type==="Dialog") {
                                 return <DialogCard key={item.Id} item={item} onlineUsers={onlineUsers} func={setCurrentChatId } />;
-                            } else if (item.Users) {
-                                return <GroupCard key={item.Id} item={item} onlineUsers={onlineUsers} connection={connection} setCurrentChatId={setCurrentChatId} />;
+                            } else if(item.Type==="Group") {
+                                return <GroupCard key={item.Id} item={item} onlineUsers={onlineUsers}  setCurrentChatId={setCurrentChatId} />;
                             }
                             return null;
                         })

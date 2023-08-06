@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import FileItem from '../FileItem/FileItem';
 import Modal from "../Modal/Modal";
-import "./AboutBox.scss"
+import DoYouWantModal from "../DoYouWantModal/DoYouWantModal";
 import DialogCard from '../Cards/Dialog/DialogCard';
+import {MediaUrl } from "../../Links";
+import "./AboutBox.scss"
  
 function AboutBox({ currentChat, onlineUsers, connection, chatData, setCurrentChatId }) {
     const [aboutBox, setAboutBox] = useState("Files");
     const [inviteModal, setInviteModal] = useState(false);
     const [leaveModal, setLeaveModal] = useState(false);
+    const [kickModal, setKickModal] = useState(false);
+    const [userToKick, setUserToKick] = useState(false);
 
     function handleInviteModal() {
         setInviteModal(!inviteModal);
@@ -33,6 +37,42 @@ function AboutBox({ currentChat, onlineUsers, connection, chatData, setCurrentCh
         handleLeaveModal();
     }
 
+    function handleKick(id) {
+        connection.invoke("Kick", currentChat.Id,id);
+
+        handleKickModal();
+    }
+
+    function handleKickModal(item) {
+        setKickModal(!kickModal);
+        setUserToKick(item);
+
+    }
+
+    const renderButton = (item) => {
+        if (currentChat.CreatorId === item.Id) {
+            return (
+                <div style={{ position: 'absolute', top: '0px', right: '4px', color: 'green', fontWeight: 'bold' }}>Creator</div>
+            );
+        } else if (currentChat.CreatorId === localStorage.getItem("currentUser")) {
+            return (<button onClick={(e) => { e.stopPropagation(); handleKickModal(item) }}
+                style={{
+                    position: 'absolute',
+                    bottom: '2px',
+                    right: '4px',
+                    backgroundColor: 'red',
+                    borderRadius: '5px',
+                    color: 'white',
+                    fontWeight: 'bold',
+                    border: 'none',
+                    cursor: 'pointer',
+                }}
+            >
+                Kick
+            </button>);
+        }
+    };
+
     return (
         <>
             <Modal closeModal={handleInviteModal} open={inviteModal} additionalClass="invite-friend">
@@ -47,15 +87,40 @@ function AboutBox({ currentChat, onlineUsers, connection, chatData, setCurrentCh
                     }
                 </div>
             </Modal>
-            <Modal closeModal={handleLeaveModal} open={leaveModal} additionalClass="leave">
-                {currentChat &&
-                    <div className="LeaveModalWrapper">
-                        <p>Do you want to leave the "{currentChat.Title}" group? </p>
-                        <button className="yesButton" onClick={() => handleLeave() }>Yes</button>
-                        <button className="noButton" onClick={() => handleLeaveModal()}>No</button>
-                    </div>}
-            </Modal>
+            { currentChat &&
+                <>
+                    <DoYouWantModal
+                        closeModal={handleLeaveModal}
+                        open={leaveModal}
+                        action={handleLeave}
+                    text={`to leave the "${currentChat.Title}" group`} />
+                {userToKick && (<DoYouWantModal
+                    closeModal={handleKickModal}
+                    open={kickModal}
+                    action={() => handleKick(userToKick.Id)}
+                    text={`to kick "${userToKick.Name}" `} />) }
+                    
+                </>
+            }
             <div className="aboutBox">
+            <div className="aboutInfo">
+                    {currentChat && !currentChat.Companion && (
+                    <><div className="aboutLogoWrapper">
+                        {currentChat && !currentChat.Companion ? (
+                            currentChat.Logo.startsWith('#') ? (
+                                <div
+                                    className="aboutLogo"
+                                    style={{
+                                        backgroundColor: currentChat.Logo
+                                    }} />
+                            ) : (
+                                        <img className="aboutLogo" src={MediaUrl + currentChat.Logo} alt="Group Logo" />
+                            )
+                        ) : null}
+                        <div className="aboutTitle">{currentChat.Title}</div>
+                        </div><div className="aboutDescription">{currentChat.Description}</div></>
+                    )}
+            </div>
                 <div className="aboutButtonsTop">
                     {currentChat && !currentChat.Companion && (
                         <>
@@ -77,7 +142,7 @@ function AboutBox({ currentChat, onlineUsers, connection, chatData, setCurrentCh
 
                 {chatData && currentChat && (
                     <div className="aboutContent">
-                        {aboutBox === "Files" ? (
+                        {currentChat.Companion || aboutBox === "Files" ? (
                             currentChat.Messages.map((item) => {
                                 return (
                                     item.Files && item.Files.length > 0 && (
@@ -107,7 +172,8 @@ function AboutBox({ currentChat, onlineUsers, connection, chatData, setCurrentCh
                                                     connection.invoke("CreateDialog", userId);
                                                 }
                                                 setAboutBox("Files");
-                                        }}></DialogCard>)
+                                            }}>{renderButton(item) }
+                                        </DialogCard>)
                                 })
 
                                 }
@@ -115,20 +181,20 @@ function AboutBox({ currentChat, onlineUsers, connection, chatData, setCurrentCh
                         ) : (
                             <></>
                         )}
-                        {!currentChat.Companion ? (
-                            <div className="aboutButtonsBot">
-                                <button className="inviteButton" onClick={() => handleInviteModal()}>
-                                    Invite
-                                </button>
-                                <button className="leaveButton" onClick={() => handleLeaveModal()}>
-                                    Leave
-                                </button>
-                            </div>
-                        ) : (
-                            <></>
-                        )}
 
                     </div>
+                )}
+                {currentChat && !currentChat.Companion ? (
+                    <div className="aboutButtonsBot">
+                        <button className="inviteButton" onClick={() => handleInviteModal()}>
+                            Invite
+                        </button>
+                        <button className="leaveButton" onClick={() => handleLeaveModal()}>
+                            Leave
+                        </button>
+                    </div>
+                ) : (
+                    <></>
                 )}
             </div>
         </>

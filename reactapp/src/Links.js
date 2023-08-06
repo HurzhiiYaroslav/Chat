@@ -8,3 +8,5 @@ export const AvatarUrl = BaseUrl + '/Avatars/';
 export const MediaUrl = BaseUrl + '/Media/';
 export const SendMessageUrl = BaseUrl + '/SendMessage';
 export const DownloadUrl = BaseUrl + '/Download';
+export const EditProfileUrl = BaseUrl + '/EditProfile';
+export const CreateChatUrl = BaseUrl + '/CreateChat';

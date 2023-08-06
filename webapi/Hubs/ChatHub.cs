@@ -2,47 +2,44 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http;
-using System.Security.Claims;
-using webapi.Utils;
-using webapi.Entities;
-using System.Text.Json.Nodes;
-using System.Runtime.Intrinsics.X86;
-using System;
 using Newtonsoft.Json.Linq;
-using Microsoft.AspNetCore.Identity;
+using System;
+using webapi.Entities;
+using webapi.Services;
+using webapi.Utils;
 
 namespace webapi.Hubs
 {
-    
+
     [EnableCors("CORS")]
     [Authorize]
     public class ChatHub:Hub
     {
         private ApplicationContext db;
         private static Dictionary<string, string> connectedUsers = new Dictionary<string, string>();
+        private readonly DialogService _dialogService;
 
 
-        public ChatHub(ApplicationContext db)
+        public ChatHub(ApplicationContext db, DialogService dialogService)
         {
             this.db = db;
+            _dialogService = dialogService;
         }
-        
+
         public override async Task OnConnectedAsync()
         {
-            var username = Context.GetHttpContext().Request.Query["username"];
-            connectedUsers[Context.ConnectionId] = username;
-            await Clients.Others.SendAsync("UserConnected", username);
+            var userId = Context.GetHttpContext().Request.Query["username"];
+            connectedUsers[Context.ConnectionId] = userId;
+            await Clients.Others.SendAsync("UserConnected", userId);
             await Test();
-            var user = await db.Users.FirstOrDefaultAsync(u => u.Id.ToString() == username.ToString().ToUpper());
-            if (user != null) { 
-
-            List<Chat> groupNames = db.GetChatsForUser(user);
-            await AddUserToGroups(Context.ConnectionId,groupNames);
-            var connectedUserList = connectedUsers.Values.ToList();
-            var u = JSONConvertor.ChatDataJson(user,db);
-            await Clients.Client(Context.ConnectionId).SendAsync("UserData", u);
-            await Clients.Client(Context.ConnectionId).SendAsync("ConnectedUsers", connectedUserList);
+            var user = await db.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userId.ToString().ToUpper());
+            if (user is not null) {
+                List<Chat> groupNames = db.GetChatsForUser(user);
+                await AddUserToGroups(Context.ConnectionId, groupNames);
+                var connectedUserList = connectedUsers.Values.ToList();
+                var u = JSONConvertor.ChatDataJson(user, db);
+                await Clients.Client(Context.ConnectionId).SendAsync("UserData", u);
+                await Clients.Client(Context.ConnectionId).SendAsync("ConnectedUsers", connectedUserList);
             }
             else
             {
@@ -84,9 +81,7 @@ namespace webapi.Hubs
 
             try
             {
-                var dialog = new Dialog { User1 = user, User2 = companion };
-                await db.Dialogs.AddAsync(dialog);
-                await db.SaveChangesAsync();
+                var dialog = await _dialogService.CreateOrGetDialogAsync(user, companion);
                 await Groups.AddToGroupAsync(Context.ConnectionId, dialog.Id.ToString());
 
                 string CompanionConnection = connectedUsers.FirstOrDefault(x => x.Value == companionId).Key;
@@ -103,21 +98,28 @@ namespace webapi.Hubs
             }
         }
 
-        public async Task Invite(string userToInviteId,string roomId )
+        public async Task Invite(string ivitedUserId,string roomId )
         {
-            var userId = connectedUsers[Context.ConnectionId];
-            var user = await db.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userId.ToUpper());
-            var room = await db.Groups.FirstOrDefaultAsync(g => g.Id.ToString() == roomId.ToUpper());
-            var invitedUser =await db.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userToInviteId.ToUpper());
+            //var userId = connectedUsers[Context.ConnectionId];
+            //var user = await db.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userId.ToUpper());
+            var room = await db.Groups.Include(g=>g.Creator).FirstOrDefaultAsync(g => g.Id.ToString() == roomId.ToUpper());
+            var invitedUser =await db.Users.FirstOrDefaultAsync(u => u.Id.ToString() == ivitedUserId.ToUpper());
             if (invitedUser != null && room!=null)
             {
                 room.Users.Add(invitedUser);
                 await db.SaveChangesAsync();
-                var jObject = new JObject();
-                jObject["chatId"] = roomId;
-                jObject["User"] = JSONConvertor.userToJObject(invitedUser);
+                var jObject = new JObject
+                {
+                    ["chatId"] = roomId,
+                    ["User"] = JSONConvertor.userToJObject(invitedUser)
+                };
                 await Clients.Group(roomId).SendAsync("newMember",jObject.ToString());
-                await Clients.Group(roomId).SendAsync("newChat", JSONConvertor.GroupToJObject(room));
+                string InvitedUserConnection = connectedUsers.FirstOrDefault(x => x.Value == ivitedUserId).Key;
+                if (InvitedUserConnection != null)
+                {
+                    await Groups.AddToGroupAsync(InvitedUserConnection, roomId);
+                    await Clients.Client(InvitedUserConnection).SendAsync("newChat", JSONConvertor.GroupToJObject(room).ToString());
+                }
                 return;
             }
             else
@@ -130,21 +132,49 @@ namespace webapi.Hubs
         public async Task Leave(string chatId)
         {
             var userId = connectedUsers[Context.ConnectionId];
-            var user = await db.Users.Include(u=>u.Groups).FirstOrDefaultAsync(u => u.Id.ToString() == userId.ToUpper());
+            var user = await db.Users.Include(u => u.Groups).FirstOrDefaultAsync(u => u.Id.ToString() == userId.ToUpper());
             var chat = await db.Groups.Include(g => g.Users).FirstOrDefaultAsync(g => g.Id.ToString() == chatId.ToUpper());
-            if (user != null && chat != null) {
+
+            if (user != null && chat != null && chat.Users.Contains(user))
+            {
                 chat.Users.Remove(user);
-                Console.WriteLine(chat.Users.Count());
-                user.Groups.Remove(chat);
-                Console.WriteLine(user.Groups.Count());
                 await db.SaveChangesAsync();
-
-                var jObject = new JObject();
-                jObject["chatId"] = chatId;
-                jObject["User"] = JSONConvertor.userToJObject(user);
-
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId,chatId);
+                var jObject = new JObject
+                {
+                    ["chatId"] = chatId,
+                    ["User"] = JSONConvertor.userToJObject(user)
+                };
+                if (chat.Users.Count==0)
+                {
+                    db.Groups.Remove(chat);
+                    await Clients.Caller.SendAsync("setError", "true");
+                    return;
+                }
                 await Clients.Group(chatId).SendAsync("memberLeftTheChat", jObject.ToString());
-            }   
+                await Notify(chatId, user.Name + " left the group");
+            }
+        }
+
+        public async Task Kick(string chatId, string exileId)
+        {
+            var userId = connectedUsers[Context.ConnectionId];
+            var user = await db.Users.Include(u => u.Groups).SingleOrDefaultAsync(u => u.Id.ToString() == userId.ToUpper());
+            var chat = await db.Groups.Include(g => g.Users).SingleOrDefaultAsync(g => g.Id.ToString() == chatId.ToUpper());
+            var exile = await db.Users.Include(u => u.Groups).SingleOrDefaultAsync(u => u.Id.ToString() == exileId.ToUpper());
+
+            if (chat != null && chat.Creator == user && exile != null && chat.Users.Contains(exile))
+            {
+                chat.Users.Remove(exile);
+               await db.SaveChangesAsync();
+                var jObject = new JObject
+                {
+                    ["chatId"] = chatId,
+                    ["User"] = JSONConvertor.userToJObject(exile)
+                };
+                await Clients.Group(chatId).SendAsync("memberLeftTheChat", jObject.ToString());
+                await Notify(chatId,user.Name + " kicked " + exile.Name);
+            }
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
@@ -155,25 +185,41 @@ namespace webapi.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
+        private async Task Notify(string chatId,string message)
+        {
+            var notify = new JObject
+            {
+                ["chatId"] = chatId,
+                ["notification"] = message
+            };
+            await Clients.Group(chatId).SendAsync("notify", notify.ToString());
+        }
+
         private async Task Test()
         {
+            
             try
             {
                 var user = await db.Users.FirstOrDefaultAsync(u => u.Name == "Tom");
                 var user1 = await db.Users.FirstOrDefaultAsync(u => u.Name == "Bob");
                 var user2 = await db.Users.FirstOrDefaultAsync(u => u.Name == "Samuel");
-                var dialog = new Dialog { User1 = user, User2 = user1 };
-                await db.Dialogs.AddAsync(dialog);
+                if (await db.Dialogs.AnyAsync(d => (d.User1 == user && d.User2 == user1) || (d.User1 == user1 && d.User2 == user)))
+                {
+                    return;
+                }
+                var dialog = await _dialogService.CreateOrGetDialogAsync(user, user1);
+
+                var group = new Group { Creator = user };
+                await db.Groups.AddAsync(group);
+                group.Users.Add(user);
+                group.Users.Add(user2);
 
                 var message = new Message { Content = "sdgoikjsdfkgjd", Sender = user1 };
+                await db.Messages.AddAsync(message);
                 dialog.Messages.Add(message);
-
-                var gr = await db.Groups.FirstOrDefaultAsync(g => g.Title == "uihui1");
-                gr.Users.Add(user);
-                gr.Users.Add(user2);
                 await db.SaveChangesAsync();
             }
-            catch (Exception ex)
+            catch
             {
                 Console.WriteLine("Allright");
             }

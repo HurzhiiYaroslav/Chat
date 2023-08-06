@@ -54,8 +54,8 @@ namespace webapi.Controllers
                 if (image != null && image.Length > 0)
                 {
                     var fileName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
-                    Directory.CreateDirectory("wwwroot/Images");
-                    var filePath = Path.Combine("wwwroot/Images", fileName);
+                    Directory.CreateDirectory("wwwroot/Avatars");
+                    var filePath = Path.Combine("wwwroot/Avatars", fileName);
                     using var stream = new FileStream(filePath, FileMode.Create);
                     await image.CopyToAsync(stream);
 

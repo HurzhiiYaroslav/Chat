@@ -1,0 +1,46 @@
+.DoYouWantModalWrapper {
+    background-color: #f8f8f8;
+    border-radius: 5px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    padding: 20px;
+    width: 300px;
+    text-align: center;
+
+    p {
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+
+    button {
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-right: 10px;
+        border: 1px solid #ccc;
+        background-color: #f1f1f1;
+        color: #333;
+
+        &.yesButton {
+            background-color: #007bff;
+            color: #ffffff;
+
+            &:hover {
+                background-color: #0056b3;
+            }
+        }
+
+        &.noButton {
+            background-color: #ff0000;
+            color: #ffffff;
+
+            &:hover {
+                background-color: #b30000;
+            }
+        }
+
+        &:last-child {
+            margin-right: 0;
+        }
+    }
+}

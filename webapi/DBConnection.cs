@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
+using webapi;
 using webapi.Entities;
 using webapi.Utils;
 
@@ -47,7 +48,6 @@ namespace webapi {
                 .HasOne(d => d.User2)
                 .WithMany();
                
-
             modelBuilder.Entity<Group>()
                 .HasBaseType<Chat>();
             modelBuilder.Entity<Group>()
@@ -56,7 +56,9 @@ namespace webapi {
                 .UsingEntity(join => join.ToTable("Enrollments"));
             modelBuilder.Entity<Group>()
                 .HasMany(b => b.Messages);
-
+            modelBuilder.Entity<Group>()
+                .HasOne(g => g.Creator)
+                .WithMany();
             SeedData(modelBuilder);
         }
         protected void SeedData(ModelBuilder modelBuilder)
@@ -65,11 +67,7 @@ namespace webapi {
                     new User { Name = "Tom", Login = "User1", Password = PasswordHasher.HashPassword("1111") },
                     new User { Name = "Bob", Login = "User2", Password = PasswordHasher.HashPassword("1111") },
                     new User { Name = "Samuel", Login = "User3", Password = PasswordHasher.HashPassword("1111") }
-
             );
-            modelBuilder.Entity<Group>().HasData(
-                new Group { Title = "uihui1"}
-                    );
         }
         public async Task<Chat> GetChatById(string Id)
         {

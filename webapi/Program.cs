@@ -3,10 +3,12 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using webapi;
 using webapi.Hubs;
+using webapi.Services;
 using webapi.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
+builder.Services.AddScoped<DialogService>();
 builder.Services.AddDbContext<ApplicationContext>();
 builder.Services.AddAuthorization();
 builder.Services.AddSignalR();

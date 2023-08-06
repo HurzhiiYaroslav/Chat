@@ -3,7 +3,60 @@
     background-color: #f0f0f0;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 300px;
+    position:relative;
+    .aboutInfo {
+        border-radius: 10px;
+        background-color: #8080804f;
+
+        .aboutLogoWrapper {
+            display: flex;
+            width: 250px;
+            height: 200px;
+            align-items: center;
+            position: relative;
+
+            .aboutLogo {
+                width: 100%;
+                height: 100%;
+                border-radius: 10px;
+                position: absolute;
+            }
+
+            .aboutLogo img {
+                width: 100%;
+                height: auto;
+                object-fit: cover;
+            }
+
+            .aboutTitle {
+                font-size: 20px;
+                font-weight: bold;
+                text-shadow: 0 0 2px black;
+                color: antiquewhite;
+                position: absolute;
+                bottom: 0px;
+                left: 0px;
+                word-wrap: break-word;
+                max-width: 162px;
+                width: 100%;
+                padding: 5px;
+                border-radius: 0px 0px 10px 10px;
+                background-color: #332d2d7d;
+            }
+        }
+
+        .aboutDescription {
+            font-size: 16px;
+            padding: 10px;
+            color: #333;
+            margin-bottom: 10px;
+            word-break: break-word;
+        }
+    }
 }
+
+
 .invite-friend {
 
 
@@ -44,8 +97,50 @@
     }
 }
 
+.aboutButtonsBot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    position: absolute;
+    bottom: 20px;
+    right:0px;
+    justify-content: space-around;
+    width: 100%;
+
+    .inviteButton {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+
+        &:hover {
+            background-color: #0056b3;
+        }
+    }
+
+    .leaveButton {
+        padding: 10px 20px;
+        background-color: #dc3545;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+
+        &:hover {
+            background-color: #c82333;
+        }
+    }
+}
+
 .aboutContent {
     display: flex;
+    position:relative;
     flex-direction: column;
     gap: 16px;
 
@@ -69,89 +164,5 @@
         gap: 8px;
     }
 
-    .aboutButtonsBot {
-        display: flex;
-        justify-content: flex-end;
-        gap: 8px;
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-
-        .inviteButton {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-
-            &:hover {
-                background-color: #0056b3;
-            }
-        }
-
-        .leaveButton {
-            padding: 10px 20px;
-            background-color: #dc3545;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-
-            &:hover {
-                background-color: #c82333;
-            }
-        }
-    }
-
-
-}
-.LeaveModalWrapper {
-    background-color: #f8f8f8; /* Light gray background */
-    border-radius: 5px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-    padding: 20px;
-    width: 300px;
-    text-align: center; /* Center the content horizontally */
-
-    p {
-        font-size: 16px;
-        margin-bottom: 20px;
-    }
-
-    button {
-        padding: 10px 20px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 16px;
-        margin-right: 10px;
-        border: 1px solid #ccc;
-        background-color: #f1f1f1;
-        color: #333;
-        &.yesButton {
-            background-color: #007bff;
-            color: #ffffff;
-
-            &:hover {
-                background-color: #0056b3;
-            }
-        }
-
-        &.noButton {
-            background-color: #ff0000;
-            color: #ffffff;
-
-            &:hover {
-                background-color: #b30000;
-            }
-        }
-
-        &:last-child {
-            margin-right: 0;
-        }
-    }
+    
 }

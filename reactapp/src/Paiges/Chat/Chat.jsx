@@ -36,14 +36,14 @@ const Chat = () => {
         });
 
         connec.on('UserDisconnected', (user) => {
-            console.log(user);
             setOnlineUsers((prevUsers) => prevUsers.filter((u) => u !== user));
         });
 
         connec.on('UserData', (data) => {
-            console.log(data);
             setChatData(JSON.parse(data));
         });
+
+        
 
         connec.on('newMember', (data) => {
             const member = JSON.parse(data);
@@ -103,18 +103,39 @@ const Chat = () => {
             console.log(error);
         });
 
-        connec.on('newChat', (dialog) => {
-            console.log(JSON.parse(dialog));
+        connec.on('newChat', (chat) => {
+            console.log(JSON.parse(chat));
             setChatData((prevChatData) => {
                 return {
                     ...prevChatData,
-                    chats: [...prevChatData.chats, JSON.parse(dialog)],
+                    chats: [...prevChatData.chats, JSON.parse(chat)],
                 };
             });
-            setCurrentChatId(JSON.parse(dialog).Id);
+            setCurrentChatId(JSON.parse(chat).Id);
         });
 
-        connec.on('ReciveMessage', (data,chatId) => {
+        connec.on('notify', (data) => {
+            const not = JSON.parse(data);
+            console.log(not);
+            setChatData((prevChatData) => {
+                const updatedChats = prevChatData.chats.map((chat) => {
+                    if (chat.Id === not.chatId) {
+                        return {
+                            ...chat,
+                            Messages: [...chat.Messages, not],
+                        };
+                    }
+                    return chat;
+                });
+
+                return {
+                    ...prevChatData,
+                    chats: updatedChats,
+                };
+            });
+        });
+
+        connec.on('ReciveMessage', (data, chatId) => {
             const mes = JSON.parse(data);
             setChatData((prevChatData) => {
                 const updatedChats = prevChatData.chats.map((chat) => {
@@ -126,6 +147,12 @@ const Chat = () => {
                     }
                     return chat;
                 });
+
+                const chatIndex = updatedChats.findIndex((chat) => chat.Id === chatId[0]);
+
+                if (chatIndex !== -1) {
+                    updatedChats.unshift(updatedChats.splice(chatIndex, 1)[0]);
+                }
 
                 return {
                     ...prevChatData,
@@ -152,6 +179,10 @@ const Chat = () => {
         
     }, []);
 
+    useEffect(() => {
+        console.log(chatData);
+    }, [chatData])
+
     return (
         <div className="chat-page">
             {chatData && chatData.user && chatData.user.Name ? (
@@ -162,6 +193,7 @@ const Chat = () => {
                         onlineUsers={onlineUsers}
                         currentChatId={currentChatId}
                         setCurrentChatId={setCurrentChatId}
+                        navigate={navigate }
                     />
                     <ChatRight
                         connection={connection}

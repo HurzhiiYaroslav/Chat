@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { AvatarUrl } from "../../../Links";
 import "./DialogCard.scss"
 
-function DialogCard({ item, onlineUsers, func }) {
+function DialogCard({ item, onlineUsers, func, children, }) {
     const user = item.Companion ? item.Companion : item;
     return (
         <div key={item.Id} className="DialogItem" onClick={() => func(item.Id) }>
@@ -16,6 +16,7 @@ function DialogCard({ item, onlineUsers, func }) {
                 <div className={`marker ${onlineUsers.includes(user.Id) ? "online" : "offline"}`} ></div>
             </div>
             {user.Name}
+            {children}
         </div>
     );
 }

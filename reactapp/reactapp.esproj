@@ -23,5 +23,6 @@
     <Folder Include="src\Components\AttachedMedia\" />
     <Folder Include="src\Components\FileItem\" />
     <Folder Include="src\Components\AboutBox\" />
+    <Folder Include="src\Components\DoYouWantModal\" />
   </ItemGroup>
 </Project>

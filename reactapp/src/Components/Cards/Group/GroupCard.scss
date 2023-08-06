@@ -1,4 +1,5 @@
 .GroupItem {
+    display: flex;
     padding: 10px;
     background-color: #f5f5f5;
     border-radius: 8px;
@@ -6,6 +7,7 @@
     cursor: pointer;
     transition: background-color 0.3s;
     margin-bottom: 5px;
+    flex-wrap: wrap;
 
     &:hover {
         background-color: #ebebeb;
@@ -16,13 +18,29 @@
     }
 }
 
-.GroupTitle {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 4px;
+.Logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
 }
 
-.GroupMembers {
-    font-size: 14px;
-    color: darkgray;
+.GroupInfo {
+    margin: 0 10px;
+
+    .GroupTitle {
+        font-size: 18px;
+        font-weight: bold;
+        margin: 0px;
+        overflow: hidden;
+        max-width: 13vw;
+        word-wrap: break-word;
+        max-height: 7vh;
+
+    }
+
+    .GroupMembers {
+        font-size: 14px;
+        color: darkgray;
+    }
 }
+

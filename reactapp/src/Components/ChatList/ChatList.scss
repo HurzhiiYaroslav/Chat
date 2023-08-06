@@ -37,8 +37,10 @@
 .List {
     display: flex;
     flex-direction: column;
-
+    max-height: 77vh;
+    overflow: auto;
 }
+
 
 
 

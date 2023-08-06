@@ -1,4 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
+using System;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace webapi.Entities
 {
@@ -26,11 +29,44 @@ namespace webapi.Entities
             jObject["Photo"] = c.Photo;
             return jObject;
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null || obj is not Dialog)
+            {
+                return false;
+            }
+
+            Dialog otherDialog = (Dialog)obj;
+            return (User1.Id == otherDialog.User1.Id && User2.Id == otherDialog.User2.Id)
+                || (User1.Id == otherDialog.User2.Id && User2.Id == otherDialog.User1.Id);
+        }
+        public override int GetHashCode()
+        {
+            int hash1 = User1.Id.GetHashCode();
+            int hash2 = User2.Id.GetHashCode();
+            return hash1 ^ hash2;
+        }
     }
 
     public class Group : Chat
     {
+
         public string Title { get; set; } = "";
+        public string Description { get; set; } = "";
+        public string Logo { get; set; }
+        public User Creator { get; set; }
         public List<User> Users { get; set; } = new List<User>();
+        public Group()
+        {
+            Title = Id.ToString()[..10].ToLowerInvariant() ?? "defaulttitle";
+            Logo = GenerateRandomColor();
+        }
+
+        private string GenerateRandomColor()
+        {
+            Random random = new Random();
+            return $"#{random.Next(0x1000000):X6}";
+        }
     }
 }

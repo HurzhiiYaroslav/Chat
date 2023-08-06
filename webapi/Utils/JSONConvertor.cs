@@ -100,7 +100,11 @@ namespace webapi.Utils
         {
             var jObject = new JObject();
             jObject["Id"] = group.Id;
+            jObject["Type"] = "Group";
             jObject["Title"] = group.Title;
+            jObject["Description"] = group.Description;
+            jObject["Logo"] = group.Logo;
+            jObject["CreatorId"] = group.Creator.Id;
             jObject["Users"] = UsersToJArray(group.Users);
             jObject["Messages"] = MessagesToJArray(group.Messages);
             return jObject;
@@ -110,6 +114,7 @@ namespace webapi.Utils
         {
             var jObject = new JObject();
             jObject["Id"] = dialog.Id;
+            jObject["Type"] = "Dialog";
             jObject["Companion"] = dialog.CompaionInfo(u);
             jObject["Messages"] = MessagesToJArray(dialog.Messages);
             return jObject;

@@ -76,9 +76,14 @@ function ChatRight({ connection, chatData, onlineUsers, currentChatId, setCurren
                 <div className="MessagesWrapper">
                     <div className="messageBox" ref={scrollRef}>
                         {chatData && chatData.chats && currentChat?.Messages.length > 0 ? (
-                            currentChat.Messages.map((item) => (
-                                <MessageItem key={item.Id} item={item} chatData={chatData} currentChat={currentChat} onlineUsers={onlineUsers} />
-                            ))
+                            currentChat.Messages.map((item,index) => {
+                                if (item.notification) {
+                                    return (<div key={index} className="notification">{item.notification}</div>)
+                                }
+                                else {
+                                    return (<MessageItem key={item.Id} item={item} chatData={chatData} currentChat={currentChat} onlineUsers={onlineUsers} />)
+                                }
+                            })
                         ) : (
                             <div>empty</div>
                         )}
