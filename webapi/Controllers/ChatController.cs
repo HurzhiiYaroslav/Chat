@@ -3,14 +3,15 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Hosting.Internal;
 using Newtonsoft.Json.Linq;
 using System.Threading.Tasks.Dataflow;
+using webapi.DataTransferObjects;
 using webapi.Entities;
 using webapi.Hubs;
+using webapi.Shared;
 using webapi.Services;
 using webapi.Utils;
+using Microsoft.IdentityModel.Tokens;
 
 namespace webapi.Controllers
 {
@@ -19,191 +20,200 @@ namespace webapi.Controllers
     [Authorize]
     public class ChatController : ControllerBase
     {
-        private readonly ApplicationContext db;
-        private readonly IHubContext<ChatHub> hubContext;
-        private readonly IWebHostEnvironment _hostEnvironment;
+        private readonly ApplicationContext _db;
+        private readonly IHubContext<ChatHub> _hubContext;
+        private readonly ILogger<ChatController> _logger;
+        private readonly UserService _userService;
 
-        public ChatController(ApplicationContext db, IHubContext<ChatHub> hubContext, IWebHostEnvironment hostEnvironment)
+        public ChatController(ApplicationContext db, IHubContext<ChatHub> hubContext, ILogger<ChatController> logger, UserService userService)
         {
-            this.db = db;
-            this.hubContext = hubContext;
-            _hostEnvironment = hostEnvironment;
+            _db = db;
+            _hubContext = hubContext;
+            _logger = logger;
+            _userService = userService;
         }
 
         [HttpPost("/SendMessage")]
-        public async Task<IActionResult> SendMessage()
+        public async Task<IActionResult> SendMessage([FromForm] SendMessageDto messageDto)
         {
-            var contextForm = Request.Form;
-            var mes = new Message
+            try
             {
-                Content = contextForm["Message"],
-                Sender = db.Users.First(d => d.Id.ToString() == contextForm["Sender"].ToString().ToUpper())
-            };
-            if (Request.Form.Files != null && Request.Form.Files.Count > 0)
-            {
-                foreach (var f in Request.Form.Files)
+                if (messageDto == null || string.IsNullOrWhiteSpace(messageDto.AccessToken) || string.IsNullOrWhiteSpace(messageDto.ChatId))
                 {
-
-
-                    var file = new Entities.File { Name = f.FileName, Type = f.ContentType };
-                    var storeName = file.Id.ToString() + Path.GetExtension(f.FileName);
-                    file.Path = storeName;
-                    mes.Files.Add(file);
-                    Directory.CreateDirectory("wwwroot/Media");
-                    var filePath = Path.Combine("wwwroot/Media", storeName);
-                    using var stream = new FileStream(filePath, FileMode.Create);
-                    await f.CopyToAsync(stream);
+                    return BadRequest(new ApiResponse { Success = false, Message = "Invalid message data." });
                 }
-            }
-            var chat = await db.GetChatById(contextForm["Chat"]);
-            await db.Messages.AddAsync(mes);
-            Console.WriteLine(chat.Id);
-            chat.Messages.Add(mes);
-            await db.SaveChangesAsync();
-            await hubContext.Clients.Groups(contextForm["Chat"]).SendAsync("ReciveMessage",JSONConvertor.MessageTojObject(mes).ToString(), contextForm["Chat"]);
-            return Ok();
-        }
 
-        [HttpGet("/Download")]
-        public async Task<IActionResult> Download(string filePath, string fileType, string fileName)
-        {
-            var path = Path.Combine(_hostEnvironment.WebRootPath, "Media", $"{filePath}");
-            byte[] filedata = System.IO.File.ReadAllBytes(path);
-            return File(filedata, fileType, fileName);
-        }
+                var user = await _userService.GetUserFromToken(messageDto.AccessToken);
+                if (user == null)
+                {
+                    return Unauthorized(new ApiResponse { Success = false, Message = "Invalid access token." });
+                }
 
-        [HttpGet("/GetVideo")]
-        public IActionResult GetVideo(string filePath)
-        {
-            var path = Path.Combine(_hostEnvironment.WebRootPath, "Media", filePath);
-            string contentType;
-            if (Path.GetExtension(filePath).Equals(".mp4", StringComparison.OrdinalIgnoreCase))
-            {
-                contentType = "video/mp4";
-            }
-            else if (Path.GetExtension(filePath).Equals(".webm", StringComparison.OrdinalIgnoreCase))
-            {
-                contentType = "video/webm";
-            }
-            else
-            {
-                contentType = "application/octet-stream";
-            }
-            if (!System.IO.File.Exists(path))
-            {
-                return NotFound();
-            }
-            byte[] fileStream = System.IO.File.ReadAllBytes(path);
-            return File(fileStream, contentType, enableRangeProcessing: true);
-        }
+                var chat = await _db.GetChatById(messageDto.ChatId);
+                if (chat == null)
+                {
+                    return NotFound(new ApiResponse { Success = false, Message = "Chat not found." });
+                }
 
+                var message = new Message
+                {
+                    Content = messageDto.Message,
+                    Sender = user
+                };
+                _db.Messages.Add(message);
+
+                chat.Messages.Add(message);
+
+                if (messageDto.Attachments != null && messageDto.Attachments.Count > 0)
+                {
+                    foreach (var attachment in messageDto.Attachments)
+                    {
+                        var file = new FileEntity { Name = attachment.FileName, Type = attachment.ContentType };
+                        var storeName = Guid.NewGuid().ToString() + Path.GetExtension(attachment.FileName);
+                        file.Path = storeName;
+
+                        Directory.CreateDirectory("wwwroot/Media");
+                        var filePath = Path.Combine("wwwroot/Media", storeName);
+
+                        using var stream = new FileStream(filePath, FileMode.Create);
+                        await attachment.CopyToAsync(stream);
+
+                        message.Files.Add(file);
+                    }
+                }
+
+                await _db.SaveChangesAsync();
+
+                await _hubContext.Clients.Group(chat.Id.ToString()).SendAsync("ReceiveMessage", JSONConvertor.MessageToJsonObject(message).ToString(), messageDto.ChatId);
+
+                return Ok(new ApiResponse { Success = true, Message = "Message sent successfully." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending message.");
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { Success = false, Message = "An error occurred while sending the message." });
+            }
+        }
 
         [HttpPost("/EditProfile")]
-        public async Task<IActionResult> EditProfile()
+        public async Task<IActionResult> EditProfile([FromForm] EditProfileDto profileDto)
         {
-            var contextForm = Request.Form;
-            if (contextForm == null)
+            try
             {
-                return BadRequest();
-            }
-            var token = contextForm["AccessToken"];
-            string login;
-            JWTCreator.DecodeToken(token, out login);
-            var user = await db.Users.FirstOrDefaultAsync(u=>u.Login==login);
-            if (string.IsNullOrEmpty(login))
-            {
-                return Unauthorized();
-            }
-
-            string NewName = contextForm["Name"];
-            if (!string.IsNullOrEmpty(NewName))
-            {
-                user.Name= NewName;
-            }
-            if (Request.Form.Files.Count > 0)
-            {
-                var image = Request.Form.Files[0];
-                if (image != null && image.Length > 0)
+                if (profileDto == null || string.IsNullOrWhiteSpace(profileDto.AccessToken))
                 {
-                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
+                    return BadRequest(new ApiResponse { Success = false, Message = "Invalid profile data." });
+                }
+
+                var user = await _userService.GetUserFromToken(profileDto.AccessToken);
+                if (user == null)
+                {
+                    return Unauthorized(new ApiResponse { Success = false, Message = "Invalid access token." });
+                }
+
+                if (!string.IsNullOrEmpty(profileDto.NewName))
+                {
+                    user.Name = profileDto.NewName;
+                }
+
+                if (profileDto.Avatar != null)
+                {
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(profileDto.Avatar.FileName);
                     Directory.CreateDirectory("wwwroot/Avatars");
                     var filePath = Path.Combine("wwwroot/Avatars", fileName);
+
                     using var stream = new FileStream(filePath, FileMode.Create);
-                    await image.CopyToAsync(stream);
+                    await profileDto.Avatar.CopyToAsync(stream);
+
                     user.Photo = fileName;
                 }
+
+                if (Validator.Password(profileDto.NewPassword) && Validator.Password(profileDto.OldPassword))
+                {
+                    if (PasswordHasher.VerifyPassword(profileDto.OldPassword, user.Password))
+                    {
+                        user.Password = PasswordHasher.HashPassword(profileDto.NewPassword);
+                    }
+                    else
+                    {
+                        return BadRequest(new ApiResponse { Success = false, Message = "Incorrect old password." });
+                    }
+                }
+
+                await _db.SaveChangesAsync();
+
+                return Ok(new ApiResponse { Success = true, Message = "Profile updated successfully." });
             }
-            var OldPassword = contextForm["OldPassword"];
-            if (PasswordHasher.VerifyPassword(OldPassword,user.Password))
+            catch (Exception ex)
             {
-                var NewPassword = contextForm["NewPassword"];
-                user.Password=PasswordHasher.HashPassword(NewPassword);
+                _logger.LogError(ex, "Error updating profile.");
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { Success = false, Message = "An error occurred while updating the profile." });
             }
-            await db.SaveChangesAsync();
-            return Ok();
         }
 
-        [HttpPost("/CreateChat")]
-        public async Task<IActionResult> CreateChat()
+        [HttpPost("CreateChat")]
+        public async Task<IActionResult> CreateChat([FromForm] CreateChatDto chatDto)
         {
-            Console.WriteLine("_____________________________________________________________________________");
-            var contextForm = Request.Form;
-            if (contextForm == null)
+            try
             {
-                return BadRequest();
-            }
-            var token = contextForm["AccessToken"];
-            string login;
-            JWTCreator.DecodeToken(token, out login);
-            var user = await db.Users.FirstOrDefaultAsync(u => u.Login == login);
-            if (string.IsNullOrEmpty(login))
-            {
-                return Unauthorized();
-            }
-            Group chat;
-            if (contextForm["Type"] == "Group")
-            {
-                chat = new Group { Creator = user };
-                await db.Groups.AddAsync(chat);
-            }
-            else
-            {
-                return BadRequest();
-            }
-            string Title = contextForm["Title"];
-            if (!string.IsNullOrEmpty(Title))
-            {
-                chat.Title = Title;
-            }
-
-            if (Request.Form.Files.Count > 0)
-            {
-                var image = Request.Form.Files[0];
-                if (image != null && image.Length > 0)
+                if (chatDto == null || string.IsNullOrWhiteSpace(chatDto.AccessToken) || string.IsNullOrWhiteSpace(chatDto.Type))
                 {
-                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
-                    Directory.CreateDirectory("wwwroot/Media");
+                    return BadRequest(new ApiResponse { Success = false, Message = "Invalid chat data." });
+                }
+
+                var user = await _userService.GetUserFromToken(chatDto.AccessToken);
+                if (user == null)
+                {
+                    return Unauthorized(new ApiResponse { Success = false, Message = "Invalid access token." });
+                }
+
+                if (chatDto.Type != "Group")
+                {
+                    return BadRequest(new ApiResponse { Success = false, Message = "Invalid chat type." });
+                }
+
+                var chat = new Group
+                {
+                    Creator = user
+                };
+                if (chatDto.Title.IsNullOrEmpty() && !chatDto.Title.Equals("null", StringComparison.OrdinalIgnoreCase))
+                {
+                    chat.Title = chatDto.Title;
+                }
+                if (!(chatDto.Description.IsNullOrEmpty() || chatDto.Description.Equals("null", StringComparison.OrdinalIgnoreCase)))
+                {
+                    chat.Description = chatDto.Description;
+                }
+                if (chatDto.LogoImage != null && chatDto.LogoImage.Length > 0)
+                {
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(chatDto.LogoImage.FileName);
                     var filePath = Path.Combine("wwwroot/Media", fileName);
+
+                    Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+
                     using var stream = new FileStream(filePath, FileMode.Create);
-                    await image.CopyToAsync(stream);
+                    await chatDto.LogoImage.CopyToAsync(stream);
                     chat.Logo = fileName;
                 }
+
+                await _db.Groups.AddAsync(chat);
+                await _db.SaveChangesAsync();
+
+                var jObject = new JObject
+                {
+                    ["chatId"] = chat.Id,
+                    ["userId"] = user.Id
+                };
+
+                return Ok(new ApiResponse { Success = true, Message = "Chat created successfully.", Data = jObject.ToString() });
             }
-            var Description = contextForm["Description"];
-            if (!string.IsNullOrEmpty(Title))
+            catch (Exception ex)
             {
-                chat.Description = Description;
+                _logger.LogError(ex, "Error creating chat.");
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { Success = false, Message = "An error occurred while creating the chat." });
             }
-            await db.SaveChangesAsync();
-            var jObject = new JObject
-            {
-                ["chatId"] = chat.Id,
-                ["userId"] = user.Id
-            };
-            string v = jObject.ToString();
-            return Ok(v);
         }
     }
 
-    
+
 }

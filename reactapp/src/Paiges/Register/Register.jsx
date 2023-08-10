@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import "./Register.scss"
-import Loading from '../../Components/Loading/Loading';
+import Loading from '../../Components/General/Loading/Loading';
 import { RegisterUrl } from '../../Links';
 
 function RegisterPage() {
@@ -41,15 +41,16 @@ function RegisterPage() {
         formData.append('image', image);
         axios.post(RegisterUrl, formData)
             .then(function (response) {
-                localStorage.setItem("accessToken", response.access_token);
-                localStorage.setItem("currentUser", response.username);
+                localStorage.setItem("accessToken", response.data.data.accessToken);
+                localStorage.setItem("currentUser", response.data.data.username);
                 console.log("success");
+                navigate("/chat", { replace: true });
+                setLoading(false);
             })
             .catch(function (error) {
                 console.error("error - ", error);
             });
-        navigate("/chat", { replace: true });
-        setLoading(false);
+        
     };  
 
     return (

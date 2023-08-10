@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { DownloadUrl,MediaUrl,BaseUrl} from "../../Links";
 import "./FileItem.scss";
 

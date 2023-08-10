@@ -1,5 +1,5 @@
 import React from 'react';
-import Modal from "../Modal/Modal";
+import Modal from "../../General/Modal/Modal";
 import "./DoYouWantModal.scss"
 
 function DoYouWantModal({ closeModal, open, action, text }) {

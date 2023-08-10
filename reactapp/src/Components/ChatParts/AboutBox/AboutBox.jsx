@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import FileItem from '../FileItem/FileItem';
-import Modal from "../Modal/Modal";
-import DoYouWantModal from "../DoYouWantModal/DoYouWantModal";
-import DialogCard from '../Cards/Dialog/DialogCard';
-import {MediaUrl } from "../../Links";
+import React, { useState, useMemo } from 'react';
+import FileItem from '../../FileItem/FileItem';
+import Modal from "../../General/Modal/Modal";
+import DoYouWantModal from "../../Modals/DoYouWantModal/DoYouWantModal";
+import DialogCard from "../../Cards/Dialog/DialogCard";
+import {MediaUrl } from "../../../Links";
 import "./AboutBox.scss"
  
 function AboutBox({ currentChat, onlineUsers, connection, chatData, setCurrentChatId }) {
@@ -73,6 +73,31 @@ function AboutBox({ currentChat, onlineUsers, connection, chatData, setCurrentCh
         }
     };
 
+    const renderedDialogCards = useMemo(() => {
+        if (currentChat && currentChat.Users && currentChat.Users.length > 0) {
+            return currentChat.Users.reverse().map((item) => (
+                <DialogCard
+                    key={item.Id}
+                    item={item}
+                    onlineUsers={onlineUsers}
+                    func={(userId) => {
+                        const filteredChats = chatData.chats.filter((chat) => chat.Companion && chat.Companion.Id === userId);
+                        if (filteredChats.length > 0) {
+                            setCurrentChatId(filteredChats[0].Id);
+                        } else {
+                            connection.invoke("CreateDialog", userId);
+                        }
+                        setAboutBox("Files");
+                    }}
+                    connection={connection}
+                >
+                    {renderButton(item)}
+                </DialogCard>
+            ));
+        }
+        return null;
+    }, [currentChat, setAboutBox]);
+
     return (
         <>
             <Modal closeModal={handleInviteModal} open={inviteModal} additionalClass="invite-friend">
@@ -80,7 +105,7 @@ function AboutBox({ currentChat, onlineUsers, connection, chatData, setCurrentCh
                     {chatData && currentChat && chatData.chats.map((item) => {
                         if (item.Companion && currentChat.Users && !currentChat.Users.some((u) => u.Id === item.Companion.Id)) {
                             return (
-                                <DialogCard key={item.Id } item={item.Companion} onlineUsers={onlineUsers} func={handleInvite }></DialogCard>
+                                <DialogCard key={item.Id} item={item.Companion} onlineUsers={onlineUsers} func={handleInvite} connection={connection}></DialogCard>
                             );
                         } 
                     })
@@ -156,32 +181,13 @@ function AboutBox({ currentChat, onlineUsers, connection, chatData, setCurrentCh
                                     )
                                 );
                             })
-                        ) : !currentChat.Companion && aboutBox === "Members" ? (
+                        ) : currentChat && !currentChat.Companion && aboutBox === "Members" ? (
                             <div className="membersSection">
-                                    {currentChat.Users && currentChat.Users.length > 0 && currentChat.Users.map((item) => {
-                                        return (<DialogCard
-                                            key={item.Id}
-                                            item={item}
-                                            onlineUsers={onlineUsers}
-                                            func={(userId) => {
-                                                const filteredChats = chatData.chats.filter((chat) => chat.Companion && chat.Companion.Id === userId);
-                                                if (filteredChats.length > 0) {
-                                                    setCurrentChatId(filteredChats[0].Id);
-                                                }
-                                                else {
-                                                    connection.invoke("CreateDialog", userId);
-                                                }
-                                                setAboutBox("Files");
-                                            }}>{renderButton(item) }
-                                        </DialogCard>)
-                                })
-
-                                }
+                                    {renderedDialogCards}
                             </div>
                         ) : (
                             <></>
                         )}
-
                     </div>
                 )}
                 {currentChat && !currentChat.Companion ? (

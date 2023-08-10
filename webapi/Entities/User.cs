@@ -1,4 +1,6 @@
-﻿namespace webapi.Entities
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace webapi.Entities
 {
     public class User
     {
@@ -12,5 +14,5 @@
 
     }
 
-    
+
 }

@@ -55,7 +55,7 @@ function MessageItem({ item, chatData, currentChat, onlineUsers }) {
                     ))}
                 </div>
             )}
-            <p className="MessageContent">{item.content}</p>
+            {item.content ? (<p className="MessageContent">{item.content}</p>) : (null)}
             <p className="MessageTime">{ConvertTme(item.time)}</p>
         </div>
     );

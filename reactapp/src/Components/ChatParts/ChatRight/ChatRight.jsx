@@ -1,11 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import MessageItem from "../MessageItem/MessageItem";
-import AttachMediaModal from "../AttachMediaModal/AttachMediaModal";
+import MessageItem from "../../MessageItem/MessageItem";
+import AttachMediaModal from "../../Modals/AttachMediaModal/AttachMediaModal";
 import AttachedMedia from "../AttachedMedia/AttachedMedia";
 import AboutBox  from "../AboutBox/AboutBox";
-//import SearchDialogCard from "../Cards/Dialog/SearchDialogCard"
-import { SendMessageUrl } from "../../Links";
+import { SendMessageUrl } from "../../../Links";    
 import "./ChatRight.scss"
 
 function ChatRight({ connection, chatData, onlineUsers, currentChatId, setCurrentChatId } ) {
@@ -39,23 +38,27 @@ function ChatRight({ connection, chatData, onlineUsers, currentChatId, setCurren
         setModal(false);
     };
 
-    function SendMessage() {
+    async function SendMessage() {
         if (mesText.length > 0 || mesFiles.length > 0) {
             const headers = {
                 Authorization: `Bearer ` + localStorage.getItem('accessToken'),
-                'Content-Type': 'multipart/form-data',
+                ContentType: 'application/x-www-form-urlencoded'
             };
             const formData = new FormData();
-            formData.append('Sender', localStorage.getItem("currentUser"));
-            formData.append('Chat', currentChatId);
+            formData.append('AccessToken', localStorage.getItem("accessToken"));
+            formData.append('ChatId', currentChatId);
             formData.append('Message', mesText);
             for (let i = 0; i < mesFiles.length; i++) {
-                formData.append('file', mesFiles[i]);
-                formData.append('type', mesFiles[i].type);
+                formData.append('Attachments', mesFiles[i]);
             }
-            axios.post(SendMessageUrl, formData, { headers });
-            setMesFiles([]);
-            setMesText("");
+            try {
+                const response = await axios.post(SendMessageUrl, formData, { headers });
+                console.log(response.data);
+                setMesFiles([]);
+                setMesText("");
+            } catch (error) {
+                console.error('Error sending message:', error);
+            }
         }
     }
 
@@ -94,13 +97,13 @@ function ChatRight({ connection, chatData, onlineUsers, currentChatId, setCurren
                             <input className="inputField" value={mesText} onChange={(e) => setMesText(e.target.value)} />
                             <div className="inputButtons">
                                 <button className="attachButton" onClick={() => setModal(true)}>Attach</button>
-                                <button className="sendButton" onClick={() => SendMessage()}>Send</button>
+                                <button className="sendButton" onClick={() =>  SendMessage()}>Send</button>
                             </div>
                         </div>
                     
                     </>}
                 </div>
-                <AboutBox currentChat={currentChat} onlineUsers={onlineUsers} connection={connection} chatData={chatData} setCurrentChatId={setCurrentChatId}></AboutBox>
+                <AboutBox currentChat={currentChat} onlineUsers={onlineUsers}  connection={connection} chatData={chatData} setCurrentChatId={setCurrentChatId}></AboutBox>
             </div>
         </>
     );

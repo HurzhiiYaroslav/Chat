@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react';
+import Modal from "../../General/Modal/Modal";
 import './AttachMediaModal.scss';
-import Modal from '../Modal/Modal';
+
 
 const AttachMediaModal = ({
     inputFileOnChange,

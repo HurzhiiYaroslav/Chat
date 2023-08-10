@@ -1,7 +1,4 @@
 ﻿using Newtonsoft.Json.Linq;
-using System;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
 
 namespace webapi.Entities
 {
@@ -18,11 +15,11 @@ namespace webapi.Entities
 
         public bool Contains(User u)
         {
-            return User1.Id==u.Id || User2.Id==u.Id;
+            return User1.Id == u.Id || User2.Id == u.Id;
         }
         public JObject CompaionInfo(User u)
         {
-            var c = u==User1 ? User2 : User1;
+            var c = u == User1 ? User2 : User1;
             var jObject = new JObject();
             jObject["Id"] = c.Id;
             jObject["Name"] = c.Name;

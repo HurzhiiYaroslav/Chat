@@ -1,15 +1,18 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using Serilog;
 using webapi;
 using webapi.Hubs;
 using webapi.Services;
 using webapi.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
+IConfiguration configuration = builder.Configuration;
 builder.Services.AddControllers();
 builder.Services.AddScoped<DialogService>();
-builder.Services.AddDbContext<ApplicationContext>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddDbContext<ApplicationContext>(options=> options.UseSqlServer(configuration.GetConnectionString("Default")));
 builder.Services.AddAuthorization();
 builder.Services.AddSignalR();
 
@@ -19,9 +22,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = AuthOptions.ISSUER,
+            ValidIssuer = AuthOptions.Issuer,
             ValidateAudience = true,
-            ValidAudience = AuthOptions.AUDIENCE,
+            ValidAudience = AuthOptions.Audience,
             ValidateLifetime = true,
             IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
             ValidateIssuerSigningKey = true
@@ -40,12 +43,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             }
         };
     });
+
 builder.Services.AddLogging(logging =>
 {
     logging.ClearProviders();
-    logging.AddConsole();
-    logging.AddDebug();
+    logging.AddSerilog(new LoggerConfiguration()
+        .MinimumLevel.Debug()
+        .WriteTo.Console()
+        .CreateLogger());
 });
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

@@ -1,197 +1,161 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System;
 using webapi.Entities;
 
 namespace webapi.Utils
 {
     public static class JSONConvertor
     {
-        public static object ChatDataJson(User u, ApplicationContext db)
+        public static string ConvertChatDataToJson(User user, ApplicationContext db)
         {
             try
             {
-                var result = new JObject
+                var userData = new
                 {
-                    { "user", userData(u)},
-                    {"chats",userChats(u,db) }
-
+                    user.Name,
+                    user.Photo
                 };
 
-                return result.ToString();
+                var chatData = new
+                {
+                    user = userData,
+                    chats = GetUserChatsJson(user, db)
+                };
+
+                return JsonConvert.SerializeObject(chatData);
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
+                return null;
             }
-
-            return null;
         }
 
-
-        public static object UserSearchJson(User user,string userInput, ApplicationContext db)
+        public static string ConvertUserSearchToJson(User user, string userInput, ApplicationContext db)
         {
             try
             {
-                var foundUsers = db.Users.Where(u => u.Name.Contains(userInput) && u!=user).ToList();
-                var companions = new List<User>();
-                var Dialogs = db.Dialogs.Where(d=>d.User1==user || d.User2 == user).ToList();
-                foreach (var dialog in Dialogs)
+                var foundUsers = db.Users
+                    .Where(u => u.Name.Contains(userInput) && u != user)
+                    .Except(GetCompanions(db, user))
+                    .ToList();
+
+                var result = new
                 {
-                    if (dialog.User1 == user)
-                    {
-                        companions.Add(dialog.User2);
-                        continue;
-                    }
-                    companions.Add(dialog.User1);
-                }
-                foundUsers.RemoveAll(u=>companions.Contains(u));
-                var result = new JObject
-                {
-                    { "Users", UsersToJArray(foundUsers )},
-                    //{"",userChats(u,db) }
+                    Users = foundUsers.Select(u => UserToJsonObject(u)).ToList()
                 };
 
-                return result.ToString();
+                return JsonConvert.SerializeObject(result);
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
+                return null;
             }
-
-            return null;
         }
 
-        private static JObject userData(User u)
+        private static IEnumerable<User> GetCompanions(ApplicationContext db, User user)
         {
+            var dialogs = db.Dialogs
+                .Where(d => d.User1 == user || d.User2 == user)
+                .ToList();
 
-            return new JObject
-            {
-                {"Name",u.Name },
-                {"Photo",u.Photo }
-            };
+            var companions = dialogs
+                .Select(d => d.User1 == user ? d.User2 : d.User1)
+                .ToList();
+
+            return companions;
         }
-        private static JArray userChats(User u, ApplicationContext db)
+
+        private static IEnumerable<object> GetUserChatsJson(User user, ApplicationContext db)
         {
-            var chats = db.GetChatsForUser(u);
-            var chatArray = new JArray();
+            var chats = db.GetChatsForUser(user);
+            var chatDataList = new List<object>();
 
             foreach (var chat in chats)
             {
-                var jObject = new JObject();
-                if (db.Dialogs.FirstOrDefault(d => d.Id == chat.Id) != null)
+                if (chat is Dialog dialog)
                 {
-                    var dialog = GetDialog(db, chat.Id);
-                    jObject = DialogToJObject(dialog,u);
+                    chatDataList.Add(DialogToJsonObject(dialog, user));
                 }
-                else if(db.Groups.FirstOrDefault(d => d.Id == chat.Id) != null)
+                else if (chat is Group group)
                 {
-                    var group = GetGroup(db, chat.Id);
-                    jObject = GroupToJObject(group);
+                    chatDataList.Add(GroupToJsonObject(group));
                 }
-
-
-                chatArray.Add(jObject);
             }
-            return chatArray;
+
+            return chatDataList;
         }
 
-        public static JObject GroupToJObject(Group group)
+        public static JObject GroupToJsonObject(Group group)
         {
-            var jObject = new JObject();
-            jObject["Id"] = group.Id;
-            jObject["Type"] = "Group";
-            jObject["Title"] = group.Title;
-            jObject["Description"] = group.Description;
-            jObject["Logo"] = group.Logo;
-            jObject["CreatorId"] = group.Creator.Id;
-            jObject["Users"] = UsersToJArray(group.Users);
-            jObject["Messages"] = MessagesToJArray(group.Messages);
-            return jObject;
-        }
-
-        public static JObject DialogToJObject(Dialog dialog,User u)
+            var jsonObject = new JObject
         {
-            var jObject = new JObject();
-            jObject["Id"] = dialog.Id;
-            jObject["Type"] = "Dialog";
-            jObject["Companion"] = dialog.CompaionInfo(u);
-            jObject["Messages"] = MessagesToJArray(dialog.Messages);
-            return jObject;
+            { "Id", group.Id },
+            { "Type", "Group" },
+            { "Title", group.Title },
+            { "Description", group.Description },
+            { "Logo", group.Logo },
+            { "CreatorId", group.Creator.Id },
+            { "Users", JArray.FromObject(group.Users.Select(UserToJsonObject)) },
+            { "Messages", JArray.FromObject(group.Messages.Select(MessageToJsonObject)) }
+        };
+
+            return jsonObject;
         }
 
-        private static Dialog GetDialog(ApplicationContext db, Guid chatId)
+        public static JObject DialogToJsonObject(Dialog dialog, User user)
         {
-            return db.Dialogs
-                .Include(d => d.Messages.OrderBy(m => m.Timestamp))
-                .ThenInclude(m => m.Files)
-                .FirstOrDefault(d => d.Id == chatId);
-        }
-
-        private static  Group GetGroup(ApplicationContext db, Guid chatId)
+            var jsonObject = new JObject
         {
-            return db.Groups
-                .Include(g => g.Messages.OrderBy(m => m.Timestamp))
-                .ThenInclude(m => m.Files)
-                .FirstOrDefault(g => g.Id == chatId);
+            { "Id", dialog.Id },
+            { "Type", "Dialog" },
+            { "Companion", dialog.CompaionInfo(user) },
+            { "Messages", JArray.FromObject(dialog.Messages.Select(MessageToJsonObject)) }
+        };
+
+            return jsonObject;
         }
 
-
-        private static JArray UsersToJArray(List<User> a)
+        public static JObject UserToJsonObject(User user)
         {
-            var arr = new JArray();
-            foreach (User u in a)
-            {
-                var jObject = userToJObject(u);
-                arr.Add(jObject);
-            }
-            return arr;
+            var jsonObject = new JObject
+        {
+            { "Id", user.Id },
+            { "Name", user.Name },
+            { "Photo", user.Photo }
+        };
+
+            return jsonObject;
         }
 
-        public static JObject userToJObject(User u)
+        public static JObject MessageToJsonObject(Message message)
         {
-            var jObject = new JObject();
-            jObject["Id"] = u.Id;
-            jObject["Name"] = u.Name;
-            jObject["Photo"] = u.Photo;
-            return jObject;
-        }
-        private static JArray MessagesToJArray(List<Message> messages)
+            var jsonObject = new JObject
         {
-            var arr = new JArray();
-            foreach (Message mes in messages)
-            {
-                arr.Add(MessageTojObject(mes));
-            }
-            return arr;
+            { "Id", message.Id },
+            { "sender", message.Sender.Id },
+            { "content", message.Content },
+            { "time", message.Timestamp },
+            { "Files", JArray.FromObject(message.Files.Select(FileToJsonObject)) }
+        };
+
+            return jsonObject;
         }
 
-        public static JObject MessageTojObject(Message mes)
+        public static JObject FileToJsonObject(FileEntity file)
         {
-            var jObject = new JObject();
-            jObject["Id"] = mes.Id;
-            jObject["sender"] = mes.Sender.Id;
-            jObject["content"] = mes.Content;
-            jObject["time"] = mes.Timestamp;
-            jObject["Files"] = FilesToJArray(mes.Files);
+            var jsonObject = new JObject
+        {
+            { "Id", file.Id },
+            { "Name", file.Name },
+            { "Type", file.Type },
+            { "Path", file.Path }
+        };
 
-            return jObject;
+            return jsonObject;
         }
 
-        private static JArray FilesToJArray(ICollection<Entities.File> files)
-        {
-            var arr = new JArray();
-            foreach (Entities.File file in files)
-            {
-                var jObject = new JObject();
-                jObject["Id"] = file.Id;
-                jObject["Name"] = file.Name;
-                jObject["Type"] = file.Type;
-                jObject["Path"] = file.Path;
-                arr.Add(jObject);
-            }
-            return arr;
-        }
     }
-
 }

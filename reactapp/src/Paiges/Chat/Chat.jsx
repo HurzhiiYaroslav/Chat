@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import ChatLeft from '../../Components/ChatLeft/ChatLeft';
-import ChatRight from '../../Components/ChatRight/ChatRight';
-import Loading from '../../Components/Loading/Loading';
+import ChatLeft from '../../Components/ChatParts/ChatLeft/ChatLeft';
+import ChatRight from '../../Components/ChatParts/ChatRight/ChatRight';
+import Loading from '../../Components/General/Loading/Loading';
 import { ChatHubUrl } from '../../Links';
 import { HubConnectionBuilder } from "@microsoft/signalr"
 
@@ -35,15 +35,18 @@ const Chat = () => {
             setOnlineUsers((prevUsers) => [...prevUsers, user[0]]);
         });
 
-        connec.on('UserDisconnected', (user) => {
-            setOnlineUsers((prevUsers) => prevUsers.filter((u) => u !== user));
-        });
+        
 
         connec.on('UserData', (data) => {
             setChatData(JSON.parse(data));
+            setOnlineUsers(localStorage.getItem("currentUser"));
         });
 
-        
+        connec.on('UserDisconnected', (user) => {
+                setOnlineUsers((prevUsers) =>
+                    prevUsers.filter((u) => u !== user)
+                );
+        });
 
         connec.on('newMember', (data) => {
             const member = JSON.parse(data);
@@ -135,11 +138,11 @@ const Chat = () => {
             });
         });
 
-        connec.on('ReciveMessage', (data, chatId) => {
+        connec.on('ReceiveMessage', (data, chatId) => {
             const mes = JSON.parse(data);
             setChatData((prevChatData) => {
                 const updatedChats = prevChatData.chats.map((chat) => {
-                    if (chat.Id === chatId[0]) {
+                    if (chat.Id === chatId) {
                         return {
                             ...chat,
                             Messages: [...chat.Messages, mes],
@@ -148,7 +151,7 @@ const Chat = () => {
                     return chat;
                 });
 
-                const chatIndex = updatedChats.findIndex((chat) => chat.Id === chatId[0]);
+                const chatIndex = updatedChats.findIndex((chat) => chat.Id === chatId);
 
                 if (chatIndex !== -1) {
                     updatedChats.unshift(updatedChats.splice(chatIndex, 1)[0]);

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { AvatarUrl,EditProfileUrl,CreateChatUrl } from '../../Links';
+import { AvatarUrl, EditProfileUrl, CreateChatUrl } from '../../../Links';
 import ChatList from '../ChatList/ChatList'
-import DoYouWantModal from "../DoYouWantModal/DoYouWantModal";
-import Modal from "../Modal/Modal";
+import DoYouWantModal from "../../Modals/DoYouWantModal/DoYouWantModal";
+import Modal from "../../General/Modal/Modal";
 import "./ChatLeft.scss"
 
 function ChatLeft({ connection, chatData, onlineUsers, currentChatId, setCurrentChatId, navigate }) {
@@ -11,8 +11,8 @@ function ChatLeft({ connection, chatData, onlineUsers, currentChatId, setCurrent
     const [editModal, setEditModal] = useState(false);
     const [newChatModal, setNewChatModal] = useState(false);
     
-
     const [error, setError] = useState(null);
+
     const [photoFile, setPhotoFile] = useState(null);
     const [newName, setNewName] = useState('');
     const [oldPassword, setOldPassword] = useState('');
@@ -63,26 +63,37 @@ function ChatLeft({ connection, chatData, onlineUsers, currentChatId, setCurrent
 
     const handleSave = () => {
         const formData = new FormData();
+        const accessToken = localStorage.getItem('accessToken');
+
+        if (!accessToken) {
+            setError("Access token is missing");
+            return;
+        }
+
         const headers = {
-            Authorization: `Bearer ` + localStorage.getItem('accessToken'),
+            Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'multipart/form-data',
         };
-        formData.append('AccessToken', localStorage.getItem("accessToken"));
-        formData.append('Name', newName);
-        formData.append('Photo', photoFile);
-        formData.append('OldPassword', oldPassword);
-        formData.append('NewPassword', newPassword);
+        formData.append('AccessToken', accessToken);
+        formData.append('NewName', newName.trim());
+        formData.append('Avatar', photoFile);
+
+        if ((oldPassword.length >= 1 || newPassword.length >= 1) && (oldPassword.length < 4 || newPassword.length < 4)) {
+            setError("Password must be at least 4 characters");
+            return;
+        } else if (oldPassword.length >= 4 && newPassword.length >= 4) {
+            formData.append('OldPassword', oldPassword);
+            formData.append('NewPassword', newPassword);
+        }
         axios.post(EditProfileUrl, formData, { headers })
             .then(function (response) {
-                console.log("success");
                 setError(null);
                 handleEditModal();
             })
             .catch(function (error) {
-                setError("something went wrong");
-                console.error("error - ", error);
+                console.error("Error - ", error);
+                setError(error.response.data.message);
             });
-        
     };
 
     function handleNewChatModal() {
@@ -106,8 +117,8 @@ function ChatLeft({ connection, chatData, onlineUsers, currentChatId, setCurrent
         formData.append('Type', newChatType);
         axios.post(CreateChatUrl, formData, { headers })
             .then(function (response) {
-                console.log(response.data);
-                connection.invoke("Invite", response.data.userId, response.data.chatId);
+                const data = JSON.parse(response.data.data);
+                connection.invoke("Invite", data.userId, data.chatId);
                 setError(null);
                 handleNewChatModal();
             })
@@ -200,7 +211,6 @@ function ChatLeft({ connection, chatData, onlineUsers, currentChatId, setCurrent
                 <ChatList connection={connection}
                     chatData={chatData}
                     onlineUsers={onlineUsers}
-                    currentChatId={currentChatId}
                     setCurrentChatId={setCurrentChatId} />
                 <button className="newChatButton" onClick={handleNewChatModal }>+</button>
             </div>

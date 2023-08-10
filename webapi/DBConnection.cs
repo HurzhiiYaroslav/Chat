@@ -1,10 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using webapi;
 using webapi.Entities;
 using webapi.Utils;
 
-namespace webapi {
+namespace webapi
+{
     public class ApplicationContext : DbContext
     {
         public DbSet<User> Users { get; set; } = null!;
@@ -17,22 +16,18 @@ namespace webapi {
             //Database.EnsureDeleted();
             Database.EnsureCreated();
         }
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlite("Data Source=Chatapp.db");
-        }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<User>()
-                .HasKey(u=>u.Id);
+                .HasKey(u => u.Id);
 
             modelBuilder.Entity<Message>()
                 .HasKey(m => m.Id);
             modelBuilder.Entity<Message>()
                 .HasOne(m => m.Sender);
             modelBuilder.Entity<Message>()
-                .HasMany(m=>m.Files);
+                .HasMany(m => m.Files);
 
             modelBuilder.Entity<Chat>()
                 .HasKey(c => c.Id);
@@ -43,22 +38,37 @@ namespace webapi {
                 .HasBaseType<Chat>();
             modelBuilder.Entity<Dialog>()
                 .HasOne(d => d.User1)
-                .WithMany();
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<Dialog>()
                 .HasOne(d => d.User2)
-                .WithMany();
-               
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+
             modelBuilder.Entity<Group>()
                 .HasBaseType<Chat>();
             modelBuilder.Entity<Group>()
                 .HasMany(g => g.Users)
                 .WithMany(s => s.Groups)
-                .UsingEntity(join => join.ToTable("Enrollments"));
+                .UsingEntity<Dictionary<string, object>>(
+        "Enrollments",
+        j => j
+            .HasOne<User>()
+            .WithMany()
+            .OnDelete(DeleteBehavior.Cascade),
+        j => j
+            .HasOne<Group>()
+            .WithMany()
+            .OnDelete(DeleteBehavior.Restrict)
+    );
             modelBuilder.Entity<Group>()
                 .HasMany(b => b.Messages);
             modelBuilder.Entity<Group>()
                 .HasOne(g => g.Creator)
                 .WithMany();
+
             SeedData(modelBuilder);
         }
         protected void SeedData(ModelBuilder modelBuilder)
@@ -88,25 +98,27 @@ namespace webapi {
         public List<Chat> GetChatsForUser(User user)
         {
             var dialogs = Dialogs
-                .Include(pc => pc.User1)
-                .Include(pc => pc.User2)
-                .Where(pc => pc.User1 == user || pc.User2 == user)
-                .Select(pc => new
-                            {
-                                Chat = (Chat)pc,
-                                LastMessageTimestamp = pc.Messages.OrderByDescending(m => m.Timestamp)
+                .Include(d => d.User1)
+                .Include(d => d.User2)
+                .Include(d => d.Messages)
+                .Where(d => d.User1 == user || d.User2 == user)
+                .Select(d => new
+                {
+                    Chat = (Chat)d,
+                    LastMessageTimestamp = d.Messages.OrderByDescending(m => m.Timestamp)
                                                                     .Select(m => m.Timestamp)
                                                                     .FirstOrDefault()
-                             })
+                })
                                 .ToList();
 
             var groupChats = Groups
-                .Include(gc => gc.Users)
-                .Where(gc => gc.Users.Any(u => u == user))
-                .Select(gc => new
+                .Include(g => g.Users)
+                .Include(g => g.Messages)
+                .Where(g => g.Users.Any(u => u == user))
+                .Select(g => new
                 {
-                    Chat = (Chat)gc,
-                    LastMessageTimestamp = gc.Messages.OrderByDescending(m => m.Timestamp)
+                    Chat = (Chat)g,
+                    LastMessageTimestamp = g.Messages.OrderByDescending(m => m.Timestamp)
                                                      .Select(m => m.Timestamp)
                                                      .FirstOrDefault()
                 })

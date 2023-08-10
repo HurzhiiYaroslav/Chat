@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { Link, useNavigate} from 'react-router-dom';
 import { unauthorizedRequest } from '../../Utils/Utils';
-import Loading from '../../Components/Loading/Loading';
+import Loading from '../../Components/General/Loading/Loading';
 import { LoginUrl } from '../../Links';
 import "./Login.scss"
 
@@ -23,11 +23,11 @@ function LoginPage() {
             Login: username,
             Password: password
         };
-
         try {
             const response = await unauthorizedRequest(LoginUrl, "POST", body);
-            localStorage.setItem("accessToken", response.access_token);
-            localStorage.setItem("currentUser", response.username);
+            console.log(response);
+            localStorage.setItem("accessToken", response.data.accessToken);
+            localStorage.setItem("currentUser", response.data.username);
             setloading(false);
             navigate("/chat", { replace: true });
         } catch (error) {

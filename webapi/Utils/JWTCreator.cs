@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authentication.OAuth;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -16,14 +13,15 @@ namespace webapi.Utils
             var claims = new List<Claim> { new Claim(ClaimTypes.Name, user.Login) };
             // создаем JWT-токен
             var jwt = new JwtSecurityToken(
-                    issuer: AuthOptions.ISSUER,
-                    audience: AuthOptions.AUDIENCE,
+                    issuer: AuthOptions.Issuer,
+                    audience: AuthOptions.Audience,
                     claims: claims,
                     expires: DateTime.UtcNow.Add(TimeSpan.FromHours(10)),
                     signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
             var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
             return encodedJwt;
         }
+
         public static bool DecodeToken(string token, out string login)
         {
             login = null;
@@ -36,7 +34,7 @@ namespace webapi.Utils
                     IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
                     ValidateIssuer = false,
                     ValidateAudience = false,
-                    ValidateLifetime = false 
+                    ValidateLifetime = false
                 };
 
                 SecurityToken validatedToken;
@@ -56,12 +54,15 @@ namespace webapi.Utils
         }
     }
 
-    public class AuthOptions
+    public static class AuthOptions
     {
-        public const string ISSUER = "MyAuthServer";
-        public const string AUDIENCE = "MyAuthClient";
-        const string KEY = "mysupersecret_secretkey!123";
-        public static SymmetricSecurityKey GetSymmetricSecurityKey() =>
-            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(KEY));
+        public const string Issuer = "MyAuthServer";
+        public const string Audience = "MyAuthClient";
+        private const string Key = "mysupersecret_secretkey!123";
+
+        public static SymmetricSecurityKey GetSymmetricSecurityKey()
+        {
+            return new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Key));
+        }
     }
 }

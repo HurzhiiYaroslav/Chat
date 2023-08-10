@@ -1,17 +1,16 @@
-﻿
-namespace webapi.Entities
+﻿namespace webapi.Entities
 {
     public class Message
     {
         public Guid Id { get; set; } = Guid.NewGuid();
-        public string Content { get; set; } = "";
+        public string? Content { get; set; } = "";
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
-        public ICollection<File> Files { get; set; } = new List<File>();
+        public ICollection<FileEntity> Files { get; set; } = new List<FileEntity>();
         public User Sender { get; set; }
     }
 
-    public class File
+    public class FileEntity
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public string Name { get; set; }
