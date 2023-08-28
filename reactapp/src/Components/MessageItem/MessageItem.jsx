@@ -19,7 +19,7 @@ function MessageItem({ item, chatData, currentChat, onlineUsers }) {
         }
     }, [currentChat, chatData, item.sender]);
     
-    function ConvertTme(a) {
+    function ConvertTime(a) {
         const dateTime = new Date(a);
         const hours = dateTime.getHours();
         const minutes = dateTime.getMinutes();
@@ -56,7 +56,7 @@ function MessageItem({ item, chatData, currentChat, onlineUsers }) {
                 </div>
             )}
             {item.content ? (<p className="MessageContent">{item.content}</p>) : (null)}
-            <p className="MessageTime">{ConvertTme(item.time)}</p>
+            <p className="MessageTime">{ConvertTime(item.time)}</p>
         </div>
     );
 }

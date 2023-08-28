@@ -15,6 +15,7 @@
     <Folder Include="src\Components\Cards\Dialog\" />
     <Folder Include="src\Components\Cards\Group\" />
     <Folder Include="src\Components\Cards\Channel\" />
+    <Folder Include="src\Components\Cards\Channel\" />
     <Folder Include="src\Components\ChatParts\ChatLeft\" />
     <Folder Include="src\Components\General\Loading\" />
     <Folder Include="src\Components\ChatParts\ChatRight\" />

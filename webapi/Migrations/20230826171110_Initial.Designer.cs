@@ -12,7 +12,7 @@ using webapi;
 namespace webapi.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20230809161823_Initial")]
+    [Migration("20230826171110_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -24,21 +24,6 @@ namespace webapi.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("Enrollments", b =>
-                {
-                    b.Property<Guid>("GroupsId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("UsersId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("GroupsId", "UsersId");
-
-                    b.HasIndex("UsersId");
-
-                    b.ToTable("Enrollments");
-                });
 
             modelBuilder.Entity("webapi.Entities.Chat", b =>
                 {
@@ -57,6 +42,26 @@ namespace webapi.Migrations
                     b.HasDiscriminator<string>("Discriminator").HasValue("Chat");
 
                     b.UseTphMappingStrategy();
+                });
+
+            modelBuilder.Entity("webapi.Entities.Enrollment", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Role")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(2);
+
+                    b.HasKey("UserId", "GroupId");
+
+                    b.HasIndex("GroupId");
+
+                    b.ToTable("Enrollments", (string)null);
                 });
 
             modelBuilder.Entity("webapi.Entities.FileEntity", b =>
@@ -143,26 +148,26 @@ namespace webapi.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("c0912cfe-376b-47b6-8f78-3f07f672d676"),
+                            Id = new Guid("49fc0230-c712-4ad6-aafc-f351ea0f947b"),
                             Login = "User1",
                             Name = "Tom",
-                            Password = "$2a$11$/biIAGWI6wX4..KawpZtD.GAgUKjqauWSL6P9p/p8S2Igs9EZBaK.",
+                            Password = "$2a$11$iI/tPE0O..bAZSBl0USbl.ueTyry8uOV0PhPWgQL6nF6d3KOGUB.m",
                             Photo = "default.jpg"
                         },
                         new
                         {
-                            Id = new Guid("e2e44036-ed46-4c4c-95b0-97ce448467a3"),
+                            Id = new Guid("cf41f811-9951-4174-946b-c46ad61d742e"),
                             Login = "User2",
                             Name = "Bob",
-                            Password = "$2a$11$jk8pYp4/s3SNxZADnEgzK.Ue.ziKGIS/3bVnzJyvXWUD855mmKX6O",
+                            Password = "$2a$11$7TVNy5FcGPLKZlC.BlqTe.Bam3pAjnXrEgfwpIxFh5FhgJfcexj0W",
                             Photo = "default.jpg"
                         },
                         new
                         {
-                            Id = new Guid("89896e5b-cdcb-4df8-b0ca-70bce10ed01b"),
+                            Id = new Guid("062c2010-27cd-4801-8444-580cae44f369"),
                             Login = "User3",
                             Name = "Samuel",
-                            Password = "$2a$11$m27qBODQglA1Nj9nlOKCF.92k.QNkwaXaoLUUWu9Eth/VPnIW/Bry",
+                            Password = "$2a$11$Wgz3ant58TxqeE3d4CqGROjvQVQuOYkmCDDqm7E62bpCgb2c4eNeW",
                             Photo = "default.jpg"
                         });
                 });
@@ -185,6 +190,12 @@ namespace webapi.Migrations
                     b.HasIndex("User2Id");
 
                     b.HasIndex("UserId");
+
+                    b.ToTable("Chat", t =>
+                        {
+                            t.Property("UserId")
+                                .HasColumnName("Dialog_UserId");
+                        });
 
                     b.HasDiscriminator().HasValue("Dialog");
                 });
@@ -213,19 +224,38 @@ namespace webapi.Migrations
                     b.HasDiscriminator().HasValue("Group");
                 });
 
-            modelBuilder.Entity("Enrollments", b =>
+            modelBuilder.Entity("webapi.Entities.Channel", b =>
                 {
-                    b.HasOne("webapi.Entities.Group", null)
-                        .WithMany()
-                        .HasForeignKey("GroupsId")
+                    b.HasBaseType("webapi.Entities.Group");
+
+                    b.Property<bool>("IsPublic")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasIndex("UserId");
+
+                    b.HasDiscriminator().HasValue("Channel");
+                });
+
+            modelBuilder.Entity("webapi.Entities.Enrollment", b =>
+                {
+                    b.HasOne("webapi.Entities.Group", "Group")
+                        .WithMany("Enrollments")
+                        .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("webapi.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("UsersId")
+                    b.HasOne("webapi.Entities.User", "User")
+                        .WithMany("Enrollments")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("webapi.Entities.FileEntity", b =>
@@ -284,6 +314,13 @@ namespace webapi.Migrations
                     b.Navigation("Creator");
                 });
 
+            modelBuilder.Entity("webapi.Entities.Channel", b =>
+                {
+                    b.HasOne("webapi.Entities.User", null)
+                        .WithMany("Channels")
+                        .HasForeignKey("UserId");
+                });
+
             modelBuilder.Entity("webapi.Entities.Chat", b =>
                 {
                     b.Navigation("Messages");
@@ -296,7 +333,16 @@ namespace webapi.Migrations
 
             modelBuilder.Entity("webapi.Entities.User", b =>
                 {
+                    b.Navigation("Channels");
+
                     b.Navigation("Dialogs");
+
+                    b.Navigation("Enrollments");
+                });
+
+            modelBuilder.Entity("webapi.Entities.Group", b =>
+                {
+                    b.Navigation("Enrollments");
                 });
 #pragma warning restore 612, 618
         }

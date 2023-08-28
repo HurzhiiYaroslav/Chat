@@ -6,7 +6,7 @@ import DoYouWantModal from "../../Modals/DoYouWantModal/DoYouWantModal";
 import Modal from "../../General/Modal/Modal";
 import "./ChatLeft.scss"
 
-function ChatLeft({ connection, chatData, onlineUsers, currentChatId, setCurrentChatId, navigate }) {
+function ChatLeft({ connection, chatData, setChatData, onlineUsers, currentChatId, setCurrentChatId, navigate }) {
     const [logoutModal, setLogoutModal] = useState(false);
     const [editModal, setEditModal] = useState(false);
     const [newChatModal, setNewChatModal] = useState(false);
@@ -106,30 +106,40 @@ function ChatLeft({ connection, chatData, onlineUsers, currentChatId, setCurrent
 
     function createNewChat() {
         const formData = new FormData();
+        const token = localStorage.getItem('accessToken');
         const headers = {
-            Authorization: `Bearer ` + localStorage.getItem('accessToken'),
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data',
         };
-        formData.append('AccessToken', localStorage.getItem("accessToken"));
+        formData.append('AccessToken', token);
         formData.append('Title', newChatTitle);
         formData.append('Description', newChatDescription);
-        formData.append('Image', newChatImage);
+        formData.append('LogoImage', newChatImage);
         formData.append('Type', newChatType);
+        formData.append('UserConnection', connection.connectionId);
         axios.post(CreateChatUrl, formData, { headers })
             .then(function (response) {
                 const data = JSON.parse(response.data.data);
-                connection.invoke("Invite", data.userId, data.chatId);
+                setChatData((prevChatData) => {
+                    return {
+                        ...prevChatData,
+                        chats: [...prevChatData.chats, data],
+                    };
+                });
+                setCurrentChatId(data.Id);
                 setError(null);
                 handleNewChatModal();
             })
             .catch(function (error) {
-                setError("something went wrong");
-                console.error("error - ", error);
+                setError("Something went wrong");
+                console.error("Error - ", error);
             });
-
-        handleNewChatModal();
     }
 
+    useEffect(() => {
+        console.log(newChatTitle);
+    }, [newChatTitle])
+     
     return (
         <>
             <DoYouWantModal
@@ -181,8 +191,8 @@ function ChatLeft({ connection, chatData, onlineUsers, currentChatId, setCurrent
                     </div>
 
                     <div class="buttonGroup">
-                        <button class="createBtn" onClick={()=>createNewChat() }>Create</button>
-                        <button class="closeBtn" onClick={handleNewChatModal}>Close</button>
+                        <button className="createBtn" onClick={()=>createNewChat() }>Create</button>
+                        <button className="closeBtn" onClick={handleNewChatModal}>Close</button>
                     </div>
                 </div>
             </Modal>

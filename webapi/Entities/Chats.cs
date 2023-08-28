@@ -51,19 +51,17 @@ namespace webapi.Entities
 
         public string Title { get; set; } = "";
         public string Description { get; set; } = "";
-        public string Logo { get; set; }
+        public string Logo { get; set; } = "";
         public User Creator { get; set; }
-        public List<User> Users { get; set; } = new List<User>();
-        public Group()
-        {
-            Title = Id.ToString()[..10].ToLowerInvariant() ?? "defaulttitle";
-            Logo = GenerateRandomColor();
-        }
+        public List<User> Users { get; set; } = new();
+        public List<Enrollment> Enrollments { get; set; }= new();
 
-        private string GenerateRandomColor()
-        {
-            Random random = new Random();
-            return $"#{random.Next(0x1000000):X6}";
-        }
+        public Enrollment? GetEnrollmentByUser(User user) => Enrollments.FirstOrDefault(e => e.User == user);
+    }
+
+
+    public class Channel : Group
+    {
+        public bool IsPublic { get; set; } = false;
     }
 }

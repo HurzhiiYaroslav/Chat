@@ -1,4 +1,8 @@
 ﻿
+
+// Ignore Spelling: Json
+
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using webapi.Entities;
@@ -38,12 +42,24 @@ namespace webapi.Utils
             {
                 var foundUsers = db.Users
                     .Where(u => u.Name.Contains(userInput) && u != user)
-                    .Except(GetCompanions(db, user))
                     .ToList();
+
+                foundUsers.RemoveAll(u => GetCompanions(db,user).Contains(u));
+
+                var foundChannels = db.Channels
+                    .Include(c=>c.Users)
+                    .Include(c => c.Enrollments)
+                    .Include(c => c.Messages)
+                   .Where(c => c.Title.Contains(userInput))
+                   .Where(c => c.IsPublic)
+                   .ToList();
+
+                foundChannels.RemoveAll(c => user.Channels.ToList().Contains(c));
 
                 var result = new
                 {
-                    Users = foundUsers.Select(u => UserToJsonObject(u)).ToList()
+                    Users = foundUsers.Select(u => UserToJsonObject(u)).ToList(),
+                    Channels = foundChannels.Select(c => ChannelToJsonObject(c)).ToList()
                 };
 
                 return JsonConvert.SerializeObject(result);
@@ -79,10 +95,15 @@ namespace webapi.Utils
                 {
                     chatDataList.Add(DialogToJsonObject(dialog, user));
                 }
+                else if (chat is Channel channel)
+                {
+                    chatDataList.Add(ChannelToJsonObject(channel));
+                }
                 else if (chat is Group group)
                 {
                     chatDataList.Add(GroupToJsonObject(group));
                 }
+                
             }
 
             return chatDataList;
@@ -98,7 +119,7 @@ namespace webapi.Utils
             { "Description", group.Description },
             { "Logo", group.Logo },
             { "CreatorId", group.Creator.Id },
-            { "Users", JArray.FromObject(group.Users.Select(UserToJsonObject)) },
+            { "Users", JArray.FromObject(group.Enrollments.Select(EnrollmentToJsonObject)) },
             { "Messages", JArray.FromObject(group.Messages.Select(MessageToJsonObject)) }
         };
 
@@ -112,11 +133,43 @@ namespace webapi.Utils
             { "Id", dialog.Id },
             { "Type", "Dialog" },
             { "Companion", dialog.CompaionInfo(user) },
-            { "Messages", JArray.FromObject(dialog.Messages.Select(MessageToJsonObject)) }
+            { "Messages", JArray.FromObject(dialog.Messages.OrderByDescending(m => m.Timestamp).Reverse().Select(MessageToJsonObject)) }
         };
 
             return jsonObject;
         }
+
+        public static JObject ChannelToJsonObject(Channel channel)
+        {
+            var jsonObject = new JObject
+        {
+            { "Id", channel.Id },
+            { "Type", "Channel" },
+            { "Title", channel.Title },
+            {"isPublic",channel.IsPublic },
+            { "Description", channel.Description },
+            { "Logo", channel.Logo },
+            { "CreatorId", channel.Creator.Id },
+            { "Users", JArray.FromObject(channel.Enrollments.Select(EnrollmentToJsonObject)) },
+            { "Messages", JArray.FromObject(channel.Messages.Select(MessageToJsonObject)) }
+        };
+
+            return jsonObject;
+        }
+
+        public static JObject EnrollmentToJsonObject(Enrollment enrollment)
+        {
+            var jsonObject = new JObject
+        {
+            { "Id", enrollment.User.Id },
+            { "Name", enrollment.User.Name },
+            { "Photo", enrollment.User.Photo },
+            { "Role", enrollment.Role.ToString()}
+        };
+
+            return jsonObject;
+        }
+
 
         public static JObject UserToJsonObject(User user)
         {

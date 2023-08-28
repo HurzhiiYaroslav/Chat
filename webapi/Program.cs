@@ -10,6 +10,8 @@ using webapi.Utils;
 var builder = WebApplication.CreateBuilder(args);
 IConfiguration configuration = builder.Configuration;
 builder.Services.AddControllers();
+builder.Services.AddScoped<ChannelService>();
+builder.Services.AddScoped<GroupService>();
 builder.Services.AddScoped<DialogService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddDbContext<ApplicationContext>(options=> options.UseSqlServer(configuration.GetConnectionString("Default")));

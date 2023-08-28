@@ -10,6 +10,7 @@ namespace webapi
         public DbSet<Dialog> Dialogs { get; set; } = null!;
         public DbSet<Group> Groups { get; set; } = null!;
         public DbSet<Message> Messages { get; set; } = null!;
+        public DbSet<Channel> Channels { get; set; } = null!;
         public ApplicationContext(DbContextOptions<ApplicationContext> options)
             : base(options)
         {
@@ -21,6 +22,11 @@ namespace webapi
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<User>()
                 .HasKey(u => u.Id);
+            modelBuilder.Entity<User>().HasData(
+                    new User { Name = "Tom", Login = "User1", Password = PasswordHasher.HashPassword("1111") },
+                    new User { Name = "Bob", Login = "User2", Password = PasswordHasher.HashPassword("1111") },
+                    new User { Name = "Samuel", Login = "User3", Password = PasswordHasher.HashPassword("1111") }
+            );
 
             modelBuilder.Entity<Message>()
                 .HasKey(m => m.Id);
@@ -40,7 +46,6 @@ namespace webapi
                 .HasOne(d => d.User1)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
-
             modelBuilder.Entity<Dialog>()
                 .HasOne(d => d.User2)
                 .WithMany()
@@ -52,42 +57,58 @@ namespace webapi
             modelBuilder.Entity<Group>()
                 .HasMany(g => g.Users)
                 .WithMany(s => s.Groups)
-                .UsingEntity<Dictionary<string, object>>(
-        "Enrollments",
+                .UsingEntity<Enrollment>(
         j => j
-            .HasOne<User>()
-            .WithMany()
+            .HasOne(e=>e.User)
+            .WithMany(u=>u.Enrollments)
+            .HasForeignKey(e=>e.UserId)
             .OnDelete(DeleteBehavior.Cascade),
         j => j
-            .HasOne<Group>()
-            .WithMany()
-            .OnDelete(DeleteBehavior.Restrict)
-    );
-            modelBuilder.Entity<Group>()
-                .HasMany(b => b.Messages);
+            .HasOne(e => e.Group)
+            .WithMany(g=>g.Enrollments)
+            .HasForeignKey(e => e.GroupId)
+            .OnDelete(DeleteBehavior.Restrict),
+            j =>
+            {
+                j.HasKey(t => new { t.UserId, t.GroupId });
+                j.ToTable("Enrollments");
+            });
             modelBuilder.Entity<Group>()
                 .HasOne(g => g.Creator)
                 .WithMany();
+
+
+            modelBuilder.Entity<Channel>()
+                .HasBaseType<Group>();
 
             SeedData(modelBuilder);
         }
         protected void SeedData(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<User>().HasData(
-                    new User { Name = "Tom", Login = "User1", Password = PasswordHasher.HashPassword("1111") },
-                    new User { Name = "Bob", Login = "User2", Password = PasswordHasher.HashPassword("1111") },
-                    new User { Name = "Samuel", Login = "User3", Password = PasswordHasher.HashPassword("1111") }
-            );
+            
         }
         public async Task<Chat> GetChatById(string Id)
         {
             Id = Id.ToUpper();
-            var dialog = await Dialogs.FirstOrDefaultAsync(d => d.Id.ToString() == Id);
+            var dialog = await Dialogs
+                .Include(d=>d.Messages)
+                .FirstOrDefaultAsync(d => d.Id.ToString() == Id);
             if (dialog != null)
             {
                 return dialog;
             }
-            var group = await Groups.FirstOrDefaultAsync(g => g.Id.ToString() == Id);
+            var group = await Groups
+                .Include(g=>g.Messages)
+                .Include(g => g.Users)
+                .FirstOrDefaultAsync(g => g.Id.ToString() == Id);
+            if (group != null)
+            {
+                return group;
+            }
+            var channel = await Channels
+                .Include(c => c.Messages)
+                .Include(c => c.Users)
+                .FirstOrDefaultAsync(g => g.Id.ToString() == Id);
             if (group != null)
             {
                 return group;
@@ -101,6 +122,7 @@ namespace webapi
                 .Include(d => d.User1)
                 .Include(d => d.User2)
                 .Include(d => d.Messages)
+                .ThenInclude(m => m.Files)
                 .Where(d => d.User1 == user || d.User2 == user)
                 .Select(d => new
                 {
@@ -110,10 +132,23 @@ namespace webapi
                                                                     .FirstOrDefault()
                 })
                                 .ToList();
-
             var groupChats = Groups
                 .Include(g => g.Users)
                 .Include(g => g.Messages)
+                .ThenInclude(m => m.Files)
+                .Where(g => g.Users.Any(u => u == user) && g.GetType() != typeof(Channel))
+                .Select(g => new
+                {
+                    Chat = (Chat)g,
+                    LastMessageTimestamp = g.Messages.OrderByDescending(m => m.Timestamp)
+                                                     .Select(m => m.Timestamp)
+                                                     .FirstOrDefault()
+                })
+                .ToList();
+            var channels = Channels
+                .Include(g => g.Users)
+                .Include(g => g.Messages)
+                .ThenInclude(m => m.Files)
                 .Where(g => g.Users.Any(u => u == user))
                 .Select(g => new
                 {
@@ -123,11 +158,11 @@ namespace webapi
                                                      .FirstOrDefault()
                 })
                 .ToList();
-
-            var chats = dialogs.Concat(groupChats)
+            var chats = dialogs.Concat(groupChats.Concat(channels))
                 .OrderByDescending(c => c.LastMessageTimestamp)
                 .Select(c => c.Chat)
                 .ToList();
+
 
             return chats;
         }

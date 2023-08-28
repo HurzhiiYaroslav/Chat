@@ -7,7 +7,6 @@ function AttachedMedia({ mesFiles, setMesFiles }) {
         setMesFiles((prevFiles) => prevFiles.filter((item) => item !== file));
     };
 
-    //useEffect(() => { console.log(mesFiles)},[mesFiles])
 
     if (mesFiles && mesFiles.length > 0 && Array.isArray(mesFiles)) {
         return (

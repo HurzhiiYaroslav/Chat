@@ -14,10 +14,15 @@ function ChatRight({ connection, chatData, onlineUsers, currentChatId, setCurren
     const [mesFiles, setMesFiles] = useState([]);
 
     useEffect(() => {
-                 
-        setCurrentChat(chatData.chats.find((element) => element.Id === currentChatId));
+        if (chatData) {
+            setCurrentChat(chatData.chats.find((element) => element.Id === currentChatId));
+        }
         //scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }, [currentChatId, chatData])
+
+    useEffect(() => {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+    }, [currentChatId])
 
     const [modal, setModal] = useState(false)
     const handleDrop = (event) => {
@@ -62,6 +67,12 @@ function ChatRight({ connection, chatData, onlineUsers, currentChatId, setCurren
         }
     }
 
+    function isPublisher() {
+        const userId = localStorage.getItem("currentUser");
+        return currentChat.CreatorId === userId ||
+            (currentChat.Users.includes(p => p.Id === userId && p.Role!=="Reader"));
+    }
+
     return (
 
         <>
@@ -91,7 +102,7 @@ function ChatRight({ connection, chatData, onlineUsers, currentChatId, setCurren
                             <div>empty</div>
                         )}
                     </div>
-                    {currentChatId && <>
+                    {currentChatId && currentChat && (currentChat.Type !== "Channel" ||  isPublisher()) && <>
                     <AttachedMedia mesFiles={mesFiles} setMesFiles={setMesFiles} />
                     <div className="inputBox">
                             <input className="inputField" value={mesText} onChange={(e) => setMesText(e.target.value)} />

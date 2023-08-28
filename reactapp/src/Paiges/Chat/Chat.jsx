@@ -6,49 +6,61 @@ import Loading from '../../Components/General/Loading/Loading';
 import { ChatHubUrl } from '../../Links';
 import { HubConnectionBuilder } from "@microsoft/signalr"
 
-const Chat = () => {
-    const navigate = useNavigate();
+const useChatConnection = () => {
     const [connection, setConnection] = useState(null);
-    const [chatData, setChatData] = useState({
-        user:null,
-        chats :[]
-    });
-    const [onlineUsers, setOnlineUsers] = useState([]);
-    const [currentChatId, setCurrentChatId] = useState(null);
 
     useEffect(() => {
-        const connec = new HubConnectionBuilder()
-            .withUrl(ChatHubUrl+ "?username=" + localStorage.getItem("currentUser"), {
-                accessTokenFactory: () => {
-                    const token = localStorage.getItem("accessToken");
-                    return token;
-                }
-            })
-            .build();
-        setConnection(connec);
+        const connectToChatHub = async () => {
+            const connec = new HubConnectionBuilder()
+                .withUrl(ChatHubUrl + "?username=" + localStorage.getItem("currentUser"), {
+                    accessTokenFactory: () => localStorage.getItem("accessToken")
+                })
+                .build();
 
-        connec.on("ConnectedUsers", connectedUserList => {
+            try {
+                await connec.start();
+                setConnection(connec);
+            } catch (error) {
+                console.error('Failed to connect to chat hub:', error);
+            }
+        };
+
+        connectToChatHub();
+
+        return () => {
+            if (connection) {
+                connection.stop();
+            }
+        };
+    }, []);
+
+    return connection;
+};
+
+const useChatEventHandlers = (connection, setChatData, setCurrentChatId, setOnlineUsers, navigate) => {
+    useEffect(() => {
+        if (!connection) return;
+
+        const handleConnectedUsers = (connectedUserList) => {
             setOnlineUsers(connectedUserList);
-        });
+        };
 
-        connec.on('UserConnected', (user) => {
+        const handleUserConnected = (user) => {
             setOnlineUsers((prevUsers) => [...prevUsers, user[0]]);
-        });
+        };
 
-        
-
-        connec.on('UserData', (data) => {
+        const handleUserData = (data) => {
             setChatData(JSON.parse(data));
-            setOnlineUsers(localStorage.getItem("currentUser"));
-        });
+            setOnlineUsers([localStorage.getItem("currentUser")]);
+        };
 
-        connec.on('UserDisconnected', (user) => {
-                setOnlineUsers((prevUsers) =>
-                    prevUsers.filter((u) => u !== user)
-                );
-        });
+        const handleUserDisconnected = (user) => {
+            setOnlineUsers((prevUsers) =>
+                prevUsers.filter((u) => u !== user)
+            );
+        };
 
-        connec.on('newMember', (data) => {
+        const handleNewMember = (data) => {
             const member = JSON.parse(data);
             setChatData((prevChatData) => {
                 const updatedChats = prevChatData.chats.map((chat) => {
@@ -66,11 +78,12 @@ const Chat = () => {
                     chats: updatedChats,
                 };
             });
-        });
+        };
 
-        connec.on('memberLeftTheChat', (data) => {
+        const handleMemberLeftTheChat = (data) => {
             const member = JSON.parse(data);
-            if (member.User.Id === localStorage.getItem("currentUser")) {
+            if (member.UserId === localStorage.getItem("currentUser")) {
+                
                 setChatData((prevChatData) => {
                     const updatedChats = prevChatData.chats.filter((chat) => chat.Id !== member.chatId);
 
@@ -79,12 +92,11 @@ const Chat = () => {
                         chats: updatedChats,
                     };
                 });
-            }
-            else {
+            } else {
                 setChatData((prevChatData) => {
                     const updatedChats = prevChatData.chats.map((chat) => {
                         if (chat.Id === member.chatId) {
-                            const updatedUsers = chat.Users.filter((user) => user.Id !== member.User.Id);
+                            const updatedUsers = chat.Users.filter((user) => user.Id !== member.UserId);
 
                             return {
                                 ...chat,
@@ -100,14 +112,13 @@ const Chat = () => {
                     };
                 });
             }
-        });
+        };
 
-        connec.on('setError', (error) => {
+        const handleSetError = (error) => {
             console.log(error);
-        });
+        };
 
-        connec.on('newChat', (chat) => {
-            console.log(JSON.parse(chat));
+        const handleNewChat = (chat) => {
             setChatData((prevChatData) => {
                 return {
                     ...prevChatData,
@@ -115,11 +126,10 @@ const Chat = () => {
                 };
             });
             setCurrentChatId(JSON.parse(chat).Id);
-        });
+        };
 
-        connec.on('notify', (data) => {
+        const handleNotify = (data) => {
             const not = JSON.parse(data);
-            console.log(not);
             setChatData((prevChatData) => {
                 const updatedChats = prevChatData.chats.map((chat) => {
                     if (chat.Id === not.chatId) {
@@ -136,9 +146,10 @@ const Chat = () => {
                     chats: updatedChats,
                 };
             });
-        });
+        };
 
-        connec.on('ReceiveMessage', (data, chatId) => {
+        const handleReceiveMessage = (data, chatId) => {
+            console.log("faf");
             const mes = JSON.parse(data);
             setChatData((prevChatData) => {
                 const updatedChats = prevChatData.chats.map((chat) => {
@@ -162,29 +173,118 @@ const Chat = () => {
                     chats: updatedChats,
                 };
             });
-        });
+        };
 
-        connec.on('Relogin', () => {
+        const handleRelogin = () => {
             localStorage.clear();
             navigate("/login", { replace: true });
-        });
-
-        connec.start()
-            .then(() => {
-                //connec.invoke("");
-            })
-            .catch((error) => {
-                console.error('fail ', error);
-            });
-        return () => {
-            connec.stop();
         };
-        
-    }, []);
+
+        const handlePublicity = (chatId) => {
+            setChatData((prevChatData) => {
+                const updatedChats = prevChatData.chats.map((chat) => {
+                    if (chat.Id === chatId) {
+                        return {
+                            ...chat,
+                            isPublic: !chat.isPublic,
+                        };
+                    }
+                    return chat;
+                });
+
+                return {
+                    ...prevChatData,
+                    chats: updatedChats,
+                };
+            });
+        };
+
+        const handleUpdateEnrollment = (enrollment, channelId) => {
+            console.log(enrollment);
+            const data = JSON.parse(enrollment);
+            console.log(data);
+            setChatData((prevChatData) => {
+                const updatedChats = prevChatData.chats.map((chat) => {
+                    if (chat.Id === channelId) {
+                        const updatedUsers = chat.Users.map((user) => {
+                            if (user.Id === data.Id) {
+                                return {
+                                    ...user,
+                                    Name : data.Name,
+                                    Photo : data.Photo,
+                                    Role : data.Role
+
+                                };
+                            }
+                            return user;
+                        });
+
+                        return {
+                            ...chat,
+                            Users: updatedUsers,
+                        };
+                    }
+                    return chat;
+                });
+
+                return {
+                    ...prevChatData,
+                    chats: updatedChats,
+                };
+            });
+        };
+
+        connection.on('ConnectedUsers', handleConnectedUsers);
+        connection.on('UserConnected', handleUserConnected);
+        connection.on('UserData', handleUserData);
+        connection.on('UserDisconnected', handleUserDisconnected);
+        connection.on('newMember', handleNewMember);
+        connection.on('memberLeftTheChat', handleMemberLeftTheChat);
+        connection.on('setError', handleSetError);
+        connection.on('newChat', handleNewChat);
+        connection.on('notify', handleNotify);
+        connection.on('ReceiveMessage', handleReceiveMessage);
+        connection.on('Relogin', handleRelogin);
+        connection.on('publicityChanged', handlePublicity);
+        connection.on('updateEnrollment', handleUpdateEnrollment);
+
+        return () => {
+            connection.off('ConnectedUsers', handleConnectedUsers);
+            connection.off('UserConnected', handleUserConnected);
+            connection.off('UserData', handleUserData);
+            connection.off('UserDisconnected', handleUserDisconnected);
+            connection.off('newMember', handleNewMember);
+            connection.off('memberLeftTheChat', handleMemberLeftTheChat);
+            connection.off('setError', handleSetError);
+            connection.off('newChat', handleNewChat);
+            connection.off('notify', handleNotify);
+            connection.off('ReceiveMessage', handleReceiveMessage);
+            connection.off('Relogin', handleRelogin);
+            connection.off('publicityChanged', handlePublicity);
+            connection.off('updateEnrollment', handleUpdateEnrollment);
+        };
+    }, [connection, navigate, setChatData, setCurrentChatId, setOnlineUsers]);
+};
+
+
+
+const Chat = () => {
+    const navigate = useNavigate();
+    const connection = useChatConnection();
+    const [chatData, setChatData] = useState({
+        user: null,
+        chats: []
+    });
+    const [onlineUsers, setOnlineUsers] = useState([]);
+    const [currentChatId, setCurrentChatId] = useState(null);
+
+    useChatEventHandlers(connection, setChatData, setCurrentChatId,setOnlineUsers,navigate);
 
     useEffect(() => {
-        console.log(chatData);
-    }, [chatData])
+        if (chatData) {
+            console.log(chatData);
+        }
+    }, [chatData]);
 
     return (
         <div className="chat-page">
@@ -193,10 +293,11 @@ const Chat = () => {
                     <ChatLeft
                         connection={connection}
                         chatData={chatData}
+                        setChatData={setChatData }
                         onlineUsers={onlineUsers}
                         currentChatId={currentChatId}
                         setCurrentChatId={setCurrentChatId}
-                        navigate={navigate }
+                        navigate={navigate}
                     />
                     <ChatRight
                         connection={connection}
@@ -207,7 +308,7 @@ const Chat = () => {
                     />
                 </>
             ) : (
-                    <Loading></Loading>
+                <Loading />
             )}
         </div>
     );

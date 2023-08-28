@@ -12,6 +12,8 @@ using webapi.Shared;
 using webapi.Services;
 using webapi.Utils;
 using Microsoft.IdentityModel.Tokens;
+using System;
+using Newtonsoft.Json;
 
 namespace webapi.Controllers
 {
@@ -24,13 +26,17 @@ namespace webapi.Controllers
         private readonly IHubContext<ChatHub> _hubContext;
         private readonly ILogger<ChatController> _logger;
         private readonly UserService _userService;
+        private readonly GroupService _groupService;
+        private readonly ChannelService _channelService;
 
-        public ChatController(ApplicationContext db, IHubContext<ChatHub> hubContext, ILogger<ChatController> logger, UserService userService)
+        public ChatController(ApplicationContext db, IHubContext<ChatHub> hubContext, ILogger<ChatController> logger, UserService userService, GroupService groupService,ChannelService channelService)
         {
             _db = db;
             _hubContext = hubContext;
             _logger = logger;
             _userService = userService;
+            _groupService = groupService;
+            _channelService = channelService;
         }
 
         [HttpPost("/SendMessage")]
@@ -167,45 +173,29 @@ namespace webapi.Controllers
                     return Unauthorized(new ApiResponse { Success = false, Message = "Invalid access token." });
                 }
 
-                if (chatDto.Type != "Group")
+                Chat? chat = null;
+                JObject? response = null;
+                if (chatDto.Type == "Group")
+                {
+                    chat = await _groupService.Create(chatDto,user);
+                    response = JSONConvertor.GroupToJsonObject((Group)chat);
+                }
+                else if (chatDto.Type == "Channel")
+                {
+                    chat = await _channelService.Create(chatDto,user);
+                    response = JSONConvertor.ChannelToJsonObject((Channel)chat);
+                }
+
+                if (chat == null || response == null)
                 {
                     return BadRequest(new ApiResponse { Success = false, Message = "Invalid chat type." });
                 }
-
-                var chat = new Group
+                else
                 {
-                    Creator = user
-                };
-                if (chatDto.Title.IsNullOrEmpty() && !chatDto.Title.Equals("null", StringComparison.OrdinalIgnoreCase))
-                {
-                    chat.Title = chatDto.Title;
-                }
-                if (!(chatDto.Description.IsNullOrEmpty() || chatDto.Description.Equals("null", StringComparison.OrdinalIgnoreCase)))
-                {
-                    chat.Description = chatDto.Description;
-                }
-                if (chatDto.LogoImage != null && chatDto.LogoImage.Length > 0)
-                {
-                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(chatDto.LogoImage.FileName);
-                    var filePath = Path.Combine("wwwroot/Media", fileName);
-
-                    Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-
-                    using var stream = new FileStream(filePath, FileMode.Create);
-                    await chatDto.LogoImage.CopyToAsync(stream);
-                    chat.Logo = fileName;
+                    await _hubContext.Groups.AddToGroupAsync(chatDto.UserConnection,chat.Id.ToString());
+                    return Ok(new ApiResponse { Success = true, Message = "Chat created successfully.", Data = JsonConvert.SerializeObject(response) });
                 }
 
-                await _db.Groups.AddAsync(chat);
-                await _db.SaveChangesAsync();
-
-                var jObject = new JObject
-                {
-                    ["chatId"] = chat.Id,
-                    ["userId"] = user.Id
-                };
-
-                return Ok(new ApiResponse { Success = true, Message = "Chat created successfully.", Data = jObject.ToString() });
             }
             catch (Exception ex)
             {

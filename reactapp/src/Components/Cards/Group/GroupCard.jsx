@@ -18,12 +18,16 @@ function GroupCard({ item, onlineUsers, setCurrentChatId }) {
         }
     };
 
+    const countOnline = () => {
+        return item.Users.filter(i => onlineUsers.includes(i.Id)).length;
+    }
+
     return (
         <div className="GroupItem" onClick={() => {setCurrentChatId(item.Id) } }>
             {renderLogo()}
             <div className="GroupInfo">
                 <h2 className="GroupTitle">{item.Title}</h2>
-                <div className="GroupMembers">{item.Users.length} members</div>
+                <div className="GroupMembers">{countOnline() + "/" + item.Users.length + " on-line"}</div>
             </div>
         </div>
     );
