@@ -16,14 +16,17 @@
     <Folder Include="src\Components\Cards\Group\" />
     <Folder Include="src\Components\Cards\Channel\" />
     <Folder Include="src\Components\Cards\Channel\" />
-    <Folder Include="src\Components\ChatParts\ChatLeft\" />
     <Folder Include="src\Components\General\Loading\" />
-    <Folder Include="src\Components\ChatParts\ChatRight\" />
     <Folder Include="src\Components\Modals\AttachMediaModal\" />
     <Folder Include="src\Components\General\Modal\" />
-    <Folder Include="src\Components\ChatParts\AttachedMedia\" />
+    <Folder Include="src\Components\AttachedMedia\" />
     <Folder Include="src\Components\FileItem\" />
-    <Folder Include="src\Components\ChatParts\AboutBox\" />
     <Folder Include="src\Components\Modals\DoYouWantModal\" />
+    <Folder Include="src\Components\Modals\UserListModal\" />
+    <Folder Include="src\Components\Modals\CreateChatModal\" />
+    <Folder Include="src\Components\Modals\EditProfileModal\" />
+    <Folder Include="src\Components\Modals\EditGroupModal\" />
+    <Folder Include="src\Components\GroupHeader\" />
+    <Folder Include="src\Components\AboutSection\" />
   </ItemGroup>
 </Project>

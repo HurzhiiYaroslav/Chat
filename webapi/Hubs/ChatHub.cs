@@ -99,36 +99,6 @@ namespace webapi.Hubs
             };
             await Clients.Group(chatId).SendAsync("notify", notify.ToString());
         }
-
-        private async Task Test()
-        {
-
-            try
-            {
-                var user = await db.Users.FirstOrDefaultAsync(u => u.Name == "Tom");
-                var user1 = await db.Users.FirstOrDefaultAsync(u => u.Name == "Bob");
-                var user2 = await db.Users.FirstOrDefaultAsync(u => u.Name == "Samuel");
-                if (await db.Dialogs.AnyAsync(d => (d.User1 == user && d.User2 == user1) || (d.User1 == user1 && d.User2 == user)))
-                {
-                    return;
-                }
-                var dialog = await _dialogService.CreateOrGetDialogAsync(user, user1);
-
-                var group = new Group { Creator = user };
-                await db.Groups.AddAsync(group);
-                group.Users.Add(user);
-                group.Users.Add(user2);
-
-                var message = new Message { Content = "sdgoikjsdfkgjd", Sender = user1 };
-                await db.Messages.AddAsync(message);
-                dialog.Messages.Add(message);
-                await db.SaveChangesAsync();
-            }
-            catch
-            {
-                Console.WriteLine("Alright");
-            }
-        }
     }
 
 }

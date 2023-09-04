@@ -13,41 +13,20 @@ namespace webapi.Services
         {
         }
 
-        public async Task<Group> Create(CreateChatDto chatDto, User user)
+        public async Task<Group> Create(CreateChatDTO chatDto, User user)
         {
             var chat = new Group
             {
-                Creator = user,
+                Enrollments = new List<Enrollment> { new Enrollment { User = user, Role = Role.Owner } },
                 Title = string.IsNullOrWhiteSpace(chatDto.Title) ? "New group" : chatDto.Title,
-                Description = string.IsNullOrWhiteSpace(chatDto.Description) ? null : chatDto.Description,
+                Description = string.IsNullOrWhiteSpace(chatDto.Description) ? "" : chatDto.Description,
                 Logo = await SaveImageAsync(chatDto.LogoImage)
             };
 
             await _dbContext.Groups.AddAsync(chat);
-            chat.Enrollments.Add(new Enrollment { User = user, Role = Role.Admin });
             await _dbContext.SaveChangesAsync();
 
             return chat;
-        }
-
-        public async Task<Group> Leave(Group group, User user)
-        {
-            if (!group.Users.Contains(user))
-                return null;
-
-            group.Users.Remove(user);
-
-            if (group.Users.Count == 0)
-            {
-                _dbContext.Groups.Remove(group);
-                await _dbContext.SaveChangesAsync();
-                return null;
-            }
-            else if (group.Creator == user)
-                group.Creator = group.Users[0];
-
-            await _dbContext.SaveChangesAsync();
-            return group;
         }
     }
 }

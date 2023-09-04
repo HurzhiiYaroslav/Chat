@@ -118,7 +118,6 @@ namespace webapi.Utils
             { "Title", group.Title },
             { "Description", group.Description },
             { "Logo", group.Logo },
-            { "CreatorId", group.Creator.Id },
             { "Users", JArray.FromObject(group.Enrollments.Select(EnrollmentToJsonObject)) },
             { "Messages", JArray.FromObject(group.Messages.Select(MessageToJsonObject)) }
         };
@@ -149,7 +148,6 @@ namespace webapi.Utils
             {"isPublic",channel.IsPublic },
             { "Description", channel.Description },
             { "Logo", channel.Logo },
-            { "CreatorId", channel.Creator.Id },
             { "Users", JArray.FromObject(channel.Enrollments.Select(EnrollmentToJsonObject)) },
             { "Messages", JArray.FromObject(channel.Messages.Select(MessageToJsonObject)) }
         };

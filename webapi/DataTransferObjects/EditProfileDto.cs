@@ -1,6 +1,6 @@
 ﻿namespace webapi.DataTransferObjects
 {
-    public class EditProfileDto
+    public class EditProfileDTO
     {
         public string? AccessToken { get; set; } = null;
         public string? NewName { get; set; } = null;

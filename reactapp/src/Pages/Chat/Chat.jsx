@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import ChatLeft from '../../Components/ChatParts/ChatLeft/ChatLeft';
-import ChatRight from '../../Components/ChatParts/ChatRight/ChatRight';
+import ChatLeft from '../../Containers/ChatLeft/ChatLeft';
+import ChatMiddle from '../../Containers/ChatMiddle/ChatMiddle';
 import Loading from '../../Components/General/Loading/Loading';
 import { ChatHubUrl } from '../../Links';
 import { HubConnectionBuilder } from "@microsoft/signalr"
@@ -299,7 +299,7 @@ const Chat = () => {
                         setCurrentChatId={setCurrentChatId}
                         navigate={navigate}
                     />
-                    <ChatRight
+                    <ChatMiddle
                         connection={connection}
                         chatData={chatData}
                         onlineUsers={onlineUsers}

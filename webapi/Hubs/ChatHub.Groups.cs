@@ -29,7 +29,6 @@ namespace webapi.Hubs
                     else if (room is Group gr)
                         await Clients.Client(InvitedUserConnection).SendAsync("newChat", JsonConvert.SerializeObject(JSONConvertor.GroupToJsonObject(gr)));
                 }
-                
             }
             else
             {
@@ -75,13 +74,21 @@ namespace webapi.Hubs
             var user = await GetCurrentUserAsync();
             var chat = await db.GetChatById(chatId);
             var exile = await db.Users.Include(u => u.Groups).FirstOrDefaultAsync(u => u.Id.ToString() == exileId.ToUpper());
-
-            if (chat is Group group && group.GetEnrollmentByUser(user).Role==Role.Admin && group.Users.Contains(exile))
+            Group group = (Group)chat;
+            var userEnrollment = group.GetEnrollmentByUser(user);
+            if (group.Users.Contains(exile))
             {
-                group.Users.Remove(exile);
-                await db.SaveChangesAsync();
-                await HandleMemberLeft(chat, exile, connectedUsers.FirstOrDefault(x => x.Value == exileId).Key);
-                await Notify(chatId, user.Name + " kicked " + exile.Name);
+                if (userEnrollment.Role > group.GetEnrollmentByUser(exile).Role)
+                {
+                    group.Users.Remove(exile);
+                    await db.SaveChangesAsync();
+                    await HandleMemberLeft(chat, exile, connectedUsers.FirstOrDefault(x => x.Value == exileId).Key);
+                    await Notify(chatId, user.Name + " kicked " + exile.Name);
+                }
+                else
+                {
+                    await Clients.Client(Context.ConnectionId).SendAsync("setError", "Not enough rights");
+                }
             }
         }
 
@@ -96,6 +103,15 @@ namespace webapi.Hubs
             if (!string.IsNullOrWhiteSpace(connection)) 
                 await Groups.RemoveFromGroupAsync(connection, chat.Id.ToString());
             await Notify(chat.Id.ToString(), member.Name + " left the group");
+        }
+
+        public async Task AddModer(string channelId, string specialId)
+        {
+            var (user, group, special) = await GetCurUserGroupAndSpecial(channelId, specialId);
+            if (user != null && group != null && group.GetEnrollmentByUser(user).Role == Role.Owner)
+            {
+                await UpdateEnrollmentRole(group, special, Role.Moder, channelId);
+            }
         }
 
     }

@@ -14,17 +14,18 @@ function DialogCard({ item, onlineUsers, func, children }) {
         }
     }
 
+
     return (
-        <div key={item.Id} className="DialogItem" onClick={() => func(item.Id) }>
+        <div key={user.Id} className="DialogItem" onClick={() => func(item.Id) }>
             <div className="PhotoBox">
                 <img
                     className="CompanionPhoto"
                     src={AvatarUrl + user.Photo}
                     alt="Avatar"
                 />
-                <div className={`marker ${isOnline(user.Id) ? "online" : "offline"}`} ></div>
+                <div className={onlineUsers && `marker ${isOnline(user.Id) ? "online" : "offline"}`} ></div>
             </div>
-            {user.Name}
+            <label>{user.Name}</label>
             {children}
         </div>
     );

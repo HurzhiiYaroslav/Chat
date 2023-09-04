@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import DialogCard from "../../Cards/Dialog/DialogCard"
-import GroupCard from "../../Cards/Group/GroupCard"
-import ChannelCard from "../../Cards/Channel/ChannelCard"
+import DialogCard from "../Cards/Dialog/DialogCard"
+import GroupCard from "../Cards/Group/GroupCard"
+import ChannelCard from "../Cards/Channel/ChannelCard"
 import "./ChatList.scss"
 function ChatList({ connection, chatData, onlineUsers, setCurrentChatId }) {
     const [listMode, setListMode] = useState("Filter");
@@ -25,7 +25,6 @@ function ChatList({ connection, chatData, onlineUsers, setCurrentChatId }) {
 
     const CreateDialog = (itemId) => {
         if (isClickable) {
-
             setIsClickable(false);
             connection.invoke("CreateDialog", itemId);
             setTimeout(() => {
@@ -70,7 +69,6 @@ function ChatList({ connection, chatData, onlineUsers, setCurrentChatId }) {
             const timeout = setTimeout(() => {
                 connection.invoke("SearchChats", fieldInput)
                     .then((response) => {
-                        console.log(response);
                         setFoundData(JSON.parse(response));
                     })
                     .catch((error) => {
@@ -121,7 +119,6 @@ function ChatList({ connection, chatData, onlineUsers, setCurrentChatId }) {
                                 <p>Users:</p>
                             {foundData && foundData.Users && foundData.Users.length > 0 ? (
                                     foundData.Users.map((item) => {
-                                        
                                         return <DialogCard key={item.Id} item={item} onlineUsers={onlineUsers} func={CreateDialog} />;
                                 })
                             ) : (

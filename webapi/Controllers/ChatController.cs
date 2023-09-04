@@ -40,7 +40,7 @@ namespace webapi.Controllers
         }
 
         [HttpPost("/SendMessage")]
-        public async Task<IActionResult> SendMessage([FromForm] SendMessageDto messageDto)
+        public async Task<IActionResult> SendMessage([FromForm] SendMessageDTO messageDto)
         {
             try
             {
@@ -102,7 +102,7 @@ namespace webapi.Controllers
         }
 
         [HttpPost("/EditProfile")]
-        public async Task<IActionResult> EditProfile([FromForm] EditProfileDto profileDto)
+        public async Task<IActionResult> EditProfile([FromForm] EditProfileDTO profileDto)
         {
             try
             {
@@ -158,7 +158,7 @@ namespace webapi.Controllers
         }
 
         [HttpPost("CreateChat")]
-        public async Task<IActionResult> CreateChat([FromForm] CreateChatDto chatDto)
+        public async Task<IActionResult> CreateChat([FromForm] CreateChatDTO chatDto)
         {
             try
             {
@@ -194,6 +194,42 @@ namespace webapi.Controllers
                 {
                     await _hubContext.Groups.AddToGroupAsync(chatDto.UserConnection,chat.Id.ToString());
                     return Ok(new ApiResponse { Success = true, Message = "Chat created successfully.", Data = JsonConvert.SerializeObject(response) });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating chat.");
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { Success = false, Message = "An error occurred while creating the chat." });
+            }
+        }
+
+        [HttpPost("EditGroup")]
+        public async Task<IActionResult> EditGroup([FromForm] EditGroupDTO EGDto)
+        {
+            try
+            {
+                if (EGDto == null || string.IsNullOrWhiteSpace(EGDto.AccessToken))
+                {
+                    return BadRequest(new ApiResponse { Success = false, Message = "Invalid data." });
+                }
+
+                var user = await _userService.GetUserFromToken(EGDto.AccessToken);
+
+                if (user == null)
+                {
+                    return Unauthorized(new ApiResponse { Success = false, Message = "Invalid access token." });
+                }
+
+                var chat = await _groupService.EditGroup(EGDto,user);
+
+                if (chat == null)
+                {
+                    return BadRequest(new ApiResponse { Success = false, Message = "Unknown chat" });
+                }
+                else
+                {
+                    return Ok(new ApiResponse { Success = true, Message = "Chat edited successfully." });
                 }
 
             }

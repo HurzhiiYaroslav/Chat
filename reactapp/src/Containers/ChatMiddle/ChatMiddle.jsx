@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import MessageItem from "../../MessageItem/MessageItem";
-import AttachMediaModal from "../../Modals/AttachMediaModal/AttachMediaModal";
-import AttachedMedia from "../AttachedMedia/AttachedMedia";
-import AboutBox  from "../AboutBox/AboutBox";
-import { SendMessageUrl } from "../../../Links";    
-import "./ChatRight.scss"
+import MessageItem from "../../Components/MessageItem/MessageItem";
+import AttachMediaModal from "../../Components/Modals/AttachMediaModal/AttachMediaModal";
+import AttachedMedia from "../../Components/AttachedMedia/AttachedMedia";
+import ChatRight from "../ChatRight/ChatRight";
+import { SendMessageUrl } from "../../Links";    
+import "./ChatMiddle.scss"
 
-function ChatRight({ connection, chatData, onlineUsers, currentChatId, setCurrentChatId } ) {
+function ChatMiddle({ connection, chatData, onlineUsers, currentChatId, setCurrentChatId } ) {
     const scrollRef = useRef();
     const [currentChat, setCurrentChat] = useState(null);
     const [mesText, setMesText] = useState("");
@@ -17,7 +17,6 @@ function ChatRight({ connection, chatData, onlineUsers, currentChatId, setCurren
         if (chatData) {
             setCurrentChat(chatData.chats.find((element) => element.Id === currentChatId));
         }
-        //scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }, [currentChatId, chatData])
 
     useEffect(() => {
@@ -69,8 +68,7 @@ function ChatRight({ connection, chatData, onlineUsers, currentChatId, setCurren
 
     function isPublisher() {
         const userId = localStorage.getItem("currentUser");
-        return currentChat.CreatorId === userId ||
-            (currentChat.Users.includes(p => p.Id === userId && p.Role!=="Reader"));
+        return currentChat.Users ? currentChat.Users.some(p => p.Id === userId && p.Role!=="Reader") : true;
     }
 
     return (
@@ -89,8 +87,8 @@ function ChatRight({ connection, chatData, onlineUsers, currentChatId, setCurren
             <div className="rightSide">
                 <div className="MessagesWrapper">
                     <div className="messageBox" ref={scrollRef}>
-                        {chatData && chatData.chats && currentChat?.Messages.length > 0 ? (
-                            currentChat.Messages.map((item,index) => {
+                        {currentChat && currentChat.Messages.length>0 ? (
+                            currentChat.Messages.map((item, index) => {
                                 if (item.notification) {
                                     return (<div key={index} className="notification">{item.notification}</div>)
                                 }
@@ -99,10 +97,10 @@ function ChatRight({ connection, chatData, onlineUsers, currentChatId, setCurren
                                 }
                             })
                         ) : (
-                            <div>empty</div>
+                            <></>
                         )}
                     </div>
-                    {currentChatId && currentChat && (currentChat.Type !== "Channel" ||  isPublisher()) && <>
+                    {currentChat && (currentChat.Type === "Channel" ||  isPublisher()) && <>
                     <AttachedMedia mesFiles={mesFiles} setMesFiles={setMesFiles} />
                     <div className="inputBox">
                             <input className="inputField" value={mesText} onChange={(e) => setMesText(e.target.value)} />
@@ -114,10 +112,10 @@ function ChatRight({ connection, chatData, onlineUsers, currentChatId, setCurren
                     
                     </>}
                 </div>
-                <AboutBox currentChat={currentChat} onlineUsers={onlineUsers}  connection={connection} chatData={chatData} setCurrentChatId={setCurrentChatId}></AboutBox>
+                <ChatRight currentChat={currentChat} onlineUsers={onlineUsers}  connection={connection} chatData={chatData} setCurrentChatId={setCurrentChatId}></ChatRight>
             </div>
         </>
     );
 }
 
-export default ChatRight;
+export default ChatMiddle;

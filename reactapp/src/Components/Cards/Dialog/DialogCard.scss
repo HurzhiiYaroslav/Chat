@@ -6,7 +6,7 @@
     border-radius: 8px;
     border: 1px solid DimGrey;
     margin-bottom: 5px;
-    position:relative;
+    position: relative;
 
     .PhotoBox {
         position: relative;
@@ -23,6 +23,11 @@
     .CompanionName {
         font-size: 16px;
         font-weight: bold;
+    }
+
+    label {
+        max-width: 170px;
+        overflow-wrap: break-word;
     }
 
     .marker {

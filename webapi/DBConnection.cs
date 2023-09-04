@@ -73,19 +73,10 @@ namespace webapi
                 j.HasKey(t => new { t.UserId, t.GroupId });
                 j.ToTable("Enrollments");
             });
-            modelBuilder.Entity<Group>()
-                .HasOne(g => g.Creator)
-                .WithMany();
-
 
             modelBuilder.Entity<Channel>()
                 .HasBaseType<Group>();
 
-            SeedData(modelBuilder);
-        }
-        protected void SeedData(ModelBuilder modelBuilder)
-        {
-            
         }
         public async Task<Chat> GetChatById(string Id)
         {

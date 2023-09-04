@@ -4,6 +4,7 @@ import axios from 'axios';
 import './Register.scss';
 import Loading from '../../Components/General/Loading/Loading';
 import { RegisterUrl } from '../../Links';
+import { useEffect } from 'react';
 
 function RegisterPage() {
     const [username, setUsername] = useState('');
@@ -16,44 +17,41 @@ function RegisterPage() {
 
     const navigate = useNavigate();
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         setLoading(true);
 
-        if (password !== confirmPassword) {
-            setError('Passwords do not match');
-            setLoading(false);
-            return;
-        }
-        if (login.length < 4) {
-            setError('Login must be at least 4 characters');
-            setLoading(false);
-            return;
-        }
-        if (password.length < 4) {
-            setError('Password must be at least 4 characters');
-            setLoading(false);
-            return;
-        }
+        try {
+            if (password !== confirmPassword) {
+                throw new Error('Passwords do not match');
+            }
+            if (login.length < 4) {
+                throw new Error('Login must be at least 4 characters');
+            }
+            if (password.length < 4) {
+                throw new Error('Password must be at least 4 characters');
+            }
+            if (username.length > 30) {
+                throw new Error('Username must be shorter than 30 characters');
+            }
 
-        const formData = new FormData();
-        formData.append('Username', username);
-        formData.append('Login', login);
-        formData.append('Password', password);
-        formData.append('image', image);
+            const formData = new FormData();
+            formData.append('Username', username);
+            formData.append('Login', login);
+            formData.append('Password', password);
+            formData.append('image', image);
 
-        axios.post(RegisterUrl, formData)
-            .then(function (response) {
-                localStorage.setItem('accessToken', response.data.data.accessToken);
-                localStorage.setItem('currentUser', response.data.data.username);
-                console.log('Registration success');
-                navigate('/chat', { replace: true });
-                setLoading(false);
-            })
-            .catch(function (error) {
-                console.error('Registration error:', error);
-                setLoading(false);
-            });
+            const response = await axios.post(RegisterUrl, formData);
+            localStorage.setItem('accessToken', response.data.data.accessToken);
+            localStorage.setItem('currentUser', response.data.data.username);
+            console.log('Registration success');
+            navigate('/chat', { replace: true });
+        } catch (error) {
+            setError(error.message);
+            //console.error('Registration error:', error.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (

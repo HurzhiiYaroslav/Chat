@@ -1,6 +1,6 @@
 ﻿namespace webapi.DataTransferObjects
 {
-    public class SendMessageDto
+    public class SendMessageDTO
     {
         public string? AccessToken { get; set; }
         public string? ChatId { get; set; }

@@ -44,17 +44,17 @@ namespace webapi.Hubs
 
         }
 
-        private async Task<(User user, Channel channel, User publisher)> GetCurUserChannelAndPublisher(string channelId, string publisherId)
+        private async Task<(User user, Group group, User special)> GetCurUserGroupAndSpecial(string groupId, string specialId)
         {
             var user = await GetCurrentUserAsync();
-            var channel = await db.Channels.Include(c => c.Enrollments).FirstOrDefaultAsync(c => c.Id.ToString() == channelId.ToUpper());
-            var publisher = await db.Users.Include(u => u.Groups).FirstOrDefaultAsync(u => u.Id.ToString() == publisherId.ToUpper());
+            var group = await db.Groups.Include(c => c.Enrollments).FirstOrDefaultAsync(c => c.Id.ToString() == groupId.ToUpper());
+            var special = await db.Users.Include(u => u.Groups).FirstOrDefaultAsync(u => u.Id.ToString() == specialId.ToUpper());
 
-            return (user, channel, publisher);
+            return (user, group, special);
         }
-        private async Task UpdateEnrollmentRoleAndNotifyClients(Channel channel, User publisher, Role newRole, string channelId)
+        private async Task UpdateEnrollmentRole(Group group, User publisher, Role newRole, string channelId)
         {
-            var enrollment = channel.GetEnrollmentByUser(publisher);
+            var enrollment = group.GetEnrollmentByUser(publisher);
             if (enrollment != null && enrollment.Role != newRole)
             {
                 enrollment.Role = newRole;
@@ -63,30 +63,21 @@ namespace webapi.Hubs
             }
         }
 
-        public async Task AddPublisher(string channelId, string publisherId)
+        public async Task AddPublisher(string groupId, string specialId)
         {
-            var (user, channel, publisher) = await GetCurUserChannelAndPublisher(channelId, publisherId);
-            if (user != null && channel != null && channel.Creator == user)
+            var (user, group, publisher) = await GetCurUserGroupAndSpecial(groupId, specialId);
+            if (user != null && group != null && group.GetEnrollmentByUser(user).Role == Role.Owner)
             {
-                await UpdateEnrollmentRoleAndNotifyClients(channel, publisher, Role.Publisher, channelId);
+                await UpdateEnrollmentRole(group, publisher, Role.Publisher, groupId);
             }
         }
 
-        public async Task AddAdmin(string channelId, string publisherId)
+        public async Task MakeReader(string groupId, string punishedId)
         {
-            var (user, channel, publisher) = await GetCurUserChannelAndPublisher(channelId, publisherId);
-            if (user != null && channel != null && channel.Creator == user)
+            var (user, group, punished) = await GetCurUserGroupAndSpecial(groupId, punishedId);
+            if (user != null && group != null && group.GetEnrollmentByUser(user).Role == Role.Owner && group.Users.Contains(punished))
             {
-                await UpdateEnrollmentRoleAndNotifyClients(channel, publisher, Role.Admin, channelId);
-            }
-        }
-
-        public async Task MakeReader(string channelId, string publisherId)
-        {
-            var (user, channel, publisher) = await GetCurUserChannelAndPublisher(channelId, publisherId);
-            if (user != null && channel != null && channel.Creator == user && channel.Users.Contains(publisher))
-            {
-                await UpdateEnrollmentRoleAndNotifyClients(channel, publisher, Role.Reader, channelId);
+                await UpdateEnrollmentRole(group, punished, Role.Reader, groupId);
             }
         }
     }

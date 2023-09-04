@@ -28,8 +28,9 @@ namespace webapi.Entities
 
     public enum Role
     {
-        Admin,
+        Reader,
         Publisher,
-        Reader
+        Moder,
+        Owner
     }
 }

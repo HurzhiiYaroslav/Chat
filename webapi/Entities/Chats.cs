@@ -52,11 +52,16 @@ namespace webapi.Entities
         public string Title { get; set; } = "";
         public string Description { get; set; } = "";
         public string Logo { get; set; } = "";
-        public User Creator { get; set; }
         public List<User> Users { get; set; } = new();
-        public List<Enrollment> Enrollments { get; set; }= new();
+        public List<Enrollment> Enrollments { get; set; } = new();
 
         public Enrollment? GetEnrollmentByUser(User user) => Enrollments.FirstOrDefault(e => e.User == user);
+        public List<Enrollment>? GetEnrollmentsByRole(Role role) => Enrollments.Where(e => e.Role == role).ToList();
+
+        public static explicit operator Group(Task<Chat> v)
+        {
+            throw new NotImplementedException();
+        }
     }
 
 
