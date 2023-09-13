@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using webapi.Entities;
-using webapi.Utils;
+using webapi.Utilities;
 
 namespace webapi
 {
@@ -22,11 +22,6 @@ namespace webapi
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<User>()
                 .HasKey(u => u.Id);
-            modelBuilder.Entity<User>().HasData(
-                    new User { Name = "Tom", Login = "User1", Password = PasswordHasher.HashPassword("1111") },
-                    new User { Name = "Bob", Login = "User2", Password = PasswordHasher.HashPassword("1111") },
-                    new User { Name = "Samuel", Login = "User3", Password = PasswordHasher.HashPassword("1111") }
-            );
 
             modelBuilder.Entity<Message>()
                 .HasKey(m => m.Id);

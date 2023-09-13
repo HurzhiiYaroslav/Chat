@@ -1,4 +1,4 @@
-.rightSide {
+.chatMiddle {
     width: 77%;
     height: 100vh;
     float: right;
@@ -8,16 +8,18 @@
     .MessagesWrapper {
         flex: 1;
         display: flex;
-        width: 80%;
         flex-direction: column;
     }
 
     .messageBox {
         flex: 1;
+        height:80%;
         padding: 10px;
         overflow-y: auto;
         display: flex;
         flex-direction: column;
+        //scroll-behavior: smooth;
+
 
         .MessageItem {
             margin-bottom: 10px;
@@ -43,15 +45,25 @@
             }
         }
 
+        .date-header {
+            background-color: #f2f2f2;
+            padding: 5px;
+            font-weight: 400;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+        }
+
         .notification {
             background-color: #f2f2f2;
             border-radius: 8px;
             padding: 2px;
             margin-bottom: 5px;
             box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
-            display:flex;
-            justify-content:center;
-            margin-bottom:10px;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+            cursor: default;
         }
     }
 

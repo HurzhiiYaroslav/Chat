@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { DownloadUrl,MediaUrl,BaseUrl} from "../../Links";
+import { DownloadUrl, MediaUrl, BaseUrl } from "../../Links";
+import { DownloadFile } from "../../Utilities/chatFunctions"
 import "./FileItem.scss";
 
 function FileItem({ file }) {
@@ -8,33 +9,8 @@ function FileItem({ file }) {
     const [audioUrl, setAudioUrl] = useState(null);
 
     const handleDownloadClick = () => {
-        const accessToken = localStorage.getItem('accessToken');
-
-        fetch(DownloadUrl + `?filePath=${file.Path}&fileType=${file.Type}&fileName=${file.Name}`, {
-            method: 'GET',
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-            },
-        })
-            .then(response => {
-                if (!response.ok) {
-                    console.log('Download error');
-                }
-                return response.blob();
-            })
-            .then(blob => {
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = file.Name;
-                link.click();
-                URL.revokeObjectURL(url);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-    };
-
+        DownloadFile(file);
+    }
     const handleViewClick = () => {
         const accessToken = localStorage.getItem('accessToken');
 
@@ -66,11 +42,13 @@ function FileItem({ file }) {
       <div key={file.Id} className="FileItem">
           <div className="fileName" >{file.Name}</div>
           
-          <button className="Download Btn" onClick={() => {
+          <button className="Download Btn" onClick={(e) => {
+              e.stopPropagation();
               handleDownloadClick();
           }}>Download</button>
           {display ? (
-              <button className="View Btn" onClick={() => {
+              <button className="View Btn" onClick={(e) => {
+                  e.stopPropagation();
                   if (file.Type.includes("image")) {
                       window.open(MediaUrl + file.Path, '_blank');
                   }

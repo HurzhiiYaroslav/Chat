@@ -1,20 +1,15 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import DoYouWantModal from "../../Components/Modals/DoYouWantModal/DoYouWantModal";
 import UserListModal from "../../Components/Modals/UserListModal/UserListModal";
 import AboutSection from '../../Components/AboutSection/AboutSection';
 import GroupHeader from '../../Components/GroupHeader/GroupHeader';
+import { getCurrentUserRole } from "../../Utilities/chatFunctions"
+import { Invite, Leave } from '../../Utilities/signalrMethods';
 import "./ChatRight.scss"
 function ChatRight({ currentChat, onlineUsers, connection, chatData, setCurrentChatId }) {
     const [inviteModal, setInviteModal] = useState(false);
     const [leaveModal, setLeaveModal] = useState(false);
-
-    const currentUserId = localStorage.getItem("currentUser");
-
-    const getCurrentUserRole = () => {
-        if (!currentChat || !currentChat.Users) return null;
-        const currentUser = currentChat.Users.find((u) => u.Id === currentUserId);
-        return currentUser ? currentUser.Role : null;
-    };
+    const userRole = getCurrentUserRole(currentChat);
 
     function handleInviteModal() {
         setInviteModal(!inviteModal);
@@ -22,7 +17,7 @@ function ChatRight({ currentChat, onlineUsers, connection, chatData, setCurrentC
 
     function handleInvite(userId) {
         if (currentChat && currentChat.Id) {
-            connection.invoke("Invite", userId, currentChat.Id)
+            Invite(connection, userId, currentChat.Id);
         } else {
             console.error("currentChat is not properly initialized or does not have an 'Id' property.");
         }
@@ -33,7 +28,7 @@ function ChatRight({ currentChat, onlineUsers, connection, chatData, setCurrentC
     }
 
     function handleLeave() {
-        connection.invoke("Leave", currentChat.Id);
+        Leave(connection, currentChat.Id);
         setCurrentChatId(null);
         handleLeaveModal();
     }
@@ -58,18 +53,18 @@ function ChatRight({ currentChat, onlineUsers, connection, chatData, setCurrentC
                         text={`to leave the "${currentChat.Title} " ${currentChat.Type}`} />
                 </>
             }
-            <div className="aboutBox">
+            <div className="chatRight">
                 <div className="aboutInfo">
-                    {currentChat && !currentChat.Companion && <GroupHeader currentChat={currentChat} userRole={getCurrentUserRole()} />}
+                    {currentChat && !currentChat.Companion && <GroupHeader currentChat={currentChat} userRole={userRole} />}
                     
                 </div>
                 {currentChat &&
                     <AboutSection chatData={chatData}
                         connection={connection}
                         currentChat={currentChat}
-                        userRole={getCurrentUserRole()}
+                        userRole={userRole}
                         onlineUsers={onlineUsers}
-                        setCurrentChatId={setCurrentChatId}
+                        setCurrentChatId={setCurrentChatId }
                     />}
                 {currentChat && !currentChat.Companion ? (
                     <div className="aboutButtonsBot">

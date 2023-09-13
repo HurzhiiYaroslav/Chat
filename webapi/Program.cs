@@ -5,7 +5,7 @@ using Serilog;
 using webapi;
 using webapi.Hubs;
 using webapi.Services;
-using webapi.Utils;
+using webapi.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 IConfiguration configuration = builder.Configuration;

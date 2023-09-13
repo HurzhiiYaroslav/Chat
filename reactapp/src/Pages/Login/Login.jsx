@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { unauthorizedRequest } from '../../Utils/Utils';
+import { unauthorizedRequest } from '../../Utilities/Utilities';
 import Loading from '../../Components/General/Loading/Loading';
 import { LoginUrl } from '../../Links';
 import './Login.scss';

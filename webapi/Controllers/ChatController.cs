@@ -10,7 +10,7 @@ using webapi.Entities;
 using webapi.Hubs;
 using webapi.Shared;
 using webapi.Services;
-using webapi.Utils;
+using webapi.Utilities;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using Newtonsoft.Json;

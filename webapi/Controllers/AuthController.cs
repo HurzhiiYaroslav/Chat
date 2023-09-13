@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using webapi.Entities;
 using webapi.Shared;
-using webapi.Utils;
+using webapi.Utilities;
 using webapi.DataTransferObjects;
 
 namespace webapi.Controllers

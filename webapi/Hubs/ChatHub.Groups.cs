@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
-using webapi.Utils;
+using webapi.Utilities;
 using webapi.Entities;
 using Newtonsoft.Json;
 
@@ -103,15 +103,6 @@ namespace webapi.Hubs
             if (!string.IsNullOrWhiteSpace(connection)) 
                 await Groups.RemoveFromGroupAsync(connection, chat.Id.ToString());
             await Notify(chat.Id.ToString(), member.Name + " left the group");
-        }
-
-        public async Task AddModer(string channelId, string specialId)
-        {
-            var (user, group, special) = await GetCurUserGroupAndSpecial(channelId, specialId);
-            if (user != null && group != null && group.GetEnrollmentByUser(user).Role == Role.Owner)
-            {
-                await UpdateEnrollmentRole(group, special, Role.Moder, channelId);
-            }
         }
 
     }

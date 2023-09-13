@@ -1,4 +1,4 @@
-﻿namespace webapi.Utils
+﻿namespace webapi.Utilities
 {
     public static class PasswordHasher
     {

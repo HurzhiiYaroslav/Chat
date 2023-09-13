@@ -36,25 +36,48 @@
 
 .List {
     display: flex;
-    height:100%;
+    height: 100%;
     flex-direction: column;
     max-height: 75vh;
     overflow: auto;
-}
 
-.FoundUsers, .FoundChannels {
-    height: 49%;
-    margin-bottom: 2px;
-    border: 1px solid grey;
-    border-radius: 5%;
-    padding: 10px;
-    overflow-y: auto;
-    overflow-x: hidden;
+    .FoundUsers, .FoundChannels {
+        margin-bottom: 2px;
+        border: 1px solid grey;
+        border-radius: 15px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        transition: height 0.5s ease;
 
-    p {
-        margin: 0px;
+        &.full {
+            height: 100%;
+        }
+
+        &.collapsed {
+            height: 10%;
+            overflow-y: hidden;
+        }
+
+        p {
+            cursor: pointer;
+            text-align: center;
+            padding: 5px;
+            background-color: #72727e4a;
+            margin: 0px;
+        }
+
+        .Inner {
+            padding: 10px;
+        }
+    }
+
+
+    .hidden {
+        display: none;
     }
 }
+
+
 
 
 

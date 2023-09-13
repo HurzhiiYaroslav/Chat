@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using webapi.Entities;
 
-namespace webapi.Utils
+namespace webapi.Utilities
 {
     public static class JSONConvertor
     {
@@ -119,7 +119,7 @@ namespace webapi.Utils
             { "Description", group.Description },
             { "Logo", group.Logo },
             { "Users", JArray.FromObject(group.Enrollments.Select(EnrollmentToJsonObject)) },
-            { "Messages", JArray.FromObject(group.Messages.Select(MessageToJsonObject)) }
+            { "Messages", JArray.FromObject(group.Messages.OrderByDescending(m => m.Timestamp).Reverse().Select(MessageToJsonObject)) }
         };
 
             return jsonObject;
@@ -149,7 +149,7 @@ namespace webapi.Utils
             { "Description", channel.Description },
             { "Logo", channel.Logo },
             { "Users", JArray.FromObject(channel.Enrollments.Select(EnrollmentToJsonObject)) },
-            { "Messages", JArray.FromObject(channel.Messages.Select(MessageToJsonObject)) }
+            { "Messages", JArray.FromObject(channel.Messages.OrderByDescending(m => m.Timestamp).Reverse().Select(MessageToJsonObject)) }
         };
 
             return jsonObject;
@@ -188,7 +188,7 @@ namespace webapi.Utils
             { "Id", message.Id },
             { "sender", message.Sender.Id },
             { "content", message.Content },
-            { "time", message.Timestamp },
+            { "time", message.Timestamp.ToString() },
             { "Files", JArray.FromObject(message.Files.Select(FileToJsonObject)) }
         };
 

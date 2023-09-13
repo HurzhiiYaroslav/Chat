@@ -69,7 +69,8 @@ function ChatLeft({ connection, chatData, setChatData, onlineUsers, currentChatI
                 <ChatList connection={connection}
                     chatData={chatData}
                     onlineUsers={onlineUsers}
-                    setCurrentChatId={setCurrentChatId} />
+                    setCurrentChatId={setCurrentChatId}
+                    currentChatId={currentChatId }/>
                 <button className="newChatButton" onClick={handleNewChatModal }>+</button>
             </div>
         </>

@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import DialogCard from "../Cards/Dialog/DialogCard"
 import GroupCard from "../Cards/Group/GroupCard"
 import ChannelCard from "../Cards/Channel/ChannelCard"
+import { createDialod, joinChannel, searchChats } from '../../Utilities/signalrMethods';
 import "./ChatList.scss"
-function ChatList({ connection, chatData, onlineUsers, setCurrentChatId }) {
+function ChatList({ connection, chatData, onlineUsers, setCurrentChatId,currentChatId }) { 
     const [listMode, setListMode] = useState("Filter");
     const [fieldInput, setFieldInput] = useState("");
     const [foundData, setFoundData] = useState(null);
     const [timeoutId, setTimeoutId] = useState(null);
+    const [foundUsersMode, setFoundUsersMode] = useState("full");
+    const [foundChannelsMode, setFoundChannelsMode] = useState("full");
     function Filter(item) {
         if (!item || fieldInput==="") {
             return item;
@@ -26,17 +29,26 @@ function ChatList({ connection, chatData, onlineUsers, setCurrentChatId }) {
     const CreateDialog = (itemId) => {
         if (isClickable) {
             setIsClickable(false);
-            connection.invoke("CreateDialog", itemId);
+            createDialod(connection, itemId);
             setTimeout(() => {
                 setIsClickable(true);
             }, 3000);
         }
     };
 
+    const ExpandAndHide = (expand,setExpand, hide,setHide) => {
+        if (expand === "full" && hide!=="full") {
+            setHide("full");
+            return;
+        }
+        setExpand("full");
+        setHide("collapsed");
+    }
+
     const JoinChannel = (channelId) => {
         if (isClickable) {
             setIsClickable(false);
-            connection.invoke("JoinChannel", channelId)
+            joinChannel(connection, channelId)
                 .then(() => {
                     setFoundData((foundData) => {
                         const updatedData = foundData.Channels.filter((channel) => channel.Id !== channelId);
@@ -67,7 +79,7 @@ function ChatList({ connection, chatData, onlineUsers, setCurrentChatId }) {
             }
 
             const timeout = setTimeout(() => {
-                connection.invoke("SearchChats", fieldInput)
+                searchChats(connection, fieldInput)
                     .then((response) => {
                         setFoundData(JSON.parse(response));
                     })
@@ -87,6 +99,7 @@ function ChatList({ connection, chatData, onlineUsers, setCurrentChatId }) {
         }
     }, [fieldInput, foundData]);
 
+
     return (
         <div className="ListWrapper">
             <div className="Bar">
@@ -99,41 +112,53 @@ function ChatList({ connection, chatData, onlineUsers, setCurrentChatId }) {
             <div className="List">
                 {chatData && listMode === "Filter" ? (
                     chatData.chats.length > 0 ? (
-                        chatData.chats.filter(Filter).map((item) => {
-                            if (item.Type==="Dialog") {
-                                return <DialogCard key={item.Id} item={item} onlineUsers={onlineUsers} func={setCurrentChatId} connection={ connection} />;
-                            } else if(item.Type==="Group") {
-                                return <GroupCard key={item.Id} item={item} onlineUsers={onlineUsers}  setCurrentChatId={setCurrentChatId} />;
-                            }
-                            else if (item.Type === "Channel") {
-                                return <ChannelCard key={item.Id} item={item} func={setCurrentChatId} />;
-                            }
-                            return null;
+                        chatData.chats
+                            .filter(Filter)
+                            .map((item) => {
+                                let chatCard = null;
+
+                                if (item.Type === "Dialog") {
+                                    chatCard = <DialogCard key={item.Id} item={item} onlineUsers={onlineUsers} func={setCurrentChatId} connection={connection} />;
+                                } else if (item.Type === "Group") {
+                                    chatCard = <GroupCard key={item.Id} item={item} onlineUsers={onlineUsers} setCurrentChatId={setCurrentChatId} />;
+                                } else if (item.Type === "Channel") {
+                                    chatCard = <ChannelCard key={item.Id} item={item} func={setCurrentChatId} />;
+                                }
+                                return (
+                                    <div key={item.Id}>
+                                        {chatCard}
+                                    </div>
+                                );
                         })
                     ) : (
                         <div>empty</div>
                     )
                 ) : listMode === "Search" ? (
                     <>
-                            <div className="FoundUsers">
-                                <p>Users:</p>
-                            {foundData && foundData.Users && foundData.Users.length > 0 ? (
-                                    foundData.Users.map((item) => {
-                                        return <DialogCard key={item.Id} item={item} onlineUsers={onlineUsers} func={CreateDialog} />;
-                                })
-                            ) : (
-                                <div></div>
-                            )}
-                        </div>
-                            <div className="FoundChannels">
-                                <p>Channels:</p>
-                                {foundData && foundData.Channels && foundData.Channels.length > 0 ? (
-                                    foundData.Channels.map((item) => {
-                                        return <ChannelCard key={item.Id} item={item} func={JoinChannel} />;
-                                    })
-                                ) : (
-                                    <div></div>
-                                )}
+                            <div className={`FoundUsers ${foundUsersMode}`} >
+                                <p onClick={() => { ExpandAndHide(foundUsersMode, setFoundUsersMode, foundChannelsMode, setFoundChannelsMode) }}>Users:</p>
+                                <div className={`Inner`} >
+                                    {foundData && foundData.Users && foundData.Users.length > 0 ? (
+                                        foundData.Users.map((item) => {
+                                            return <DialogCard key={item.Id} item={item} onlineUsers={onlineUsers} func={CreateDialog} />;
+                                        })
+                                    ) : (
+                                        <>empty</>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className={`FoundChannels ${foundChannelsMode}`} >
+                                <p onClick={() => { ExpandAndHide(foundChannelsMode, setFoundChannelsMode, foundUsersMode, setFoundUsersMode) }}>Channels:</p>
+                                <div className={`Inner`} >
+                                    {foundData && foundData.Channels && foundData.Channels.length > 0 ? (
+                                        foundData.Channels.map((item) => {
+                                            return <ChannelCard key={item.Id} item={item} func={JoinChannel} />;
+                                        })
+                                    ) : (
+                                        <>empty</>
+                                    )}
+                                </div>
                             </div>
                     </>
                 ) : (

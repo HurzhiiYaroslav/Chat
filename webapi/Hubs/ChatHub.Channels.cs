@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
-using webapi.Utils;
+using webapi.Utilities;
 using webapi.Entities;
 
 namespace webapi.Hubs
@@ -63,22 +63,17 @@ namespace webapi.Hubs
             }
         }
 
-        public async Task AddPublisher(string groupId, string specialId)
+        public async Task UpdateUserRole(string groupId, string specialId, string newRoleValue)
         {
-            var (user, group, publisher) = await GetCurUserGroupAndSpecial(groupId, specialId);
-            if (user != null && group != null && group.GetEnrollmentByUser(user).Role == Role.Owner)
+            Enum.TryParse(newRoleValue, true, out Role newRole);
+
+            var (user, group, special) = await GetCurUserGroupAndSpecial(groupId, specialId);
+
+            if (user != null && group != null && group.GetEnrollmentByUser(user).Role == Role.Owner && group.Users.Contains(special))
             {
-                await UpdateEnrollmentRole(group, publisher, Role.Publisher, groupId);
+                await UpdateEnrollmentRole(group, special, newRole, groupId);
             }
         }
 
-        public async Task MakeReader(string groupId, string punishedId)
-        {
-            var (user, group, punished) = await GetCurUserGroupAndSpecial(groupId, punishedId);
-            if (user != null && group != null && group.GetEnrollmentByUser(user).Role == Role.Owner && group.Users.Contains(punished))
-            {
-                await UpdateEnrollmentRole(group, punished, Role.Reader, groupId);
-            }
-        }
     }
 }

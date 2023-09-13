@@ -3,20 +3,21 @@ import DialogCard from '../Cards/Dialog/DialogCard';
 import FileItem from '../FileItem/FileItem';
 import UserListModal from '../Modals/UserListModal/UserListModal';
 import DoYouWantModal from '../Modals/DoYouWantModal/DoYouWantModal';
+import { OpenOrCreateDialog, isAbleToKick } from "../../Utilities/chatFunctions"
+import { Kick ,updateRole,changePublicity } from "../../Utilities/signalrMethods"
 import "./AboutSection.scss";
 
 function AboutSection({ chatData, currentChat, connection, userRole, onlineUsers, setCurrentChatId }) {
-    const [aboutBox, setAboutBox] = useState("Files");
+    const [aboutSection, setAboutSection] = useState("Files");
     const [addSpecialModal, setAddSpecialModal] = useState(false);
     const [role, setRole] = useState("Publisher");
     const [kickModal, setKickModal] = useState(false);
     const [userToKick, setUserToKick] = useState(null);
 
-    const isModer = userRole === "Moder" || userRole === "Owner";
     const publicity = currentChat && currentChat.isPublic ? "Public" : "non-Public";
 
     const changePublicity = (chatId) => {
-        connection.invoke("ChangePublicity", chatId);
+        changePublicity(connection, chatId);
     }
 
     const renderDialogCard = (item, additionalContent) => (
@@ -24,7 +25,7 @@ function AboutSection({ chatData, currentChat, connection, userRole, onlineUsers
             key={item.Id}
             item={item}
             onlineUsers={onlineUsers}
-            func={(userId) => OpenOrCreateDialog(userId)}
+            func={(userId) => OpenOrCreateDialog(userId, chatData, setCurrentChatId, connection)}
             connection={connection}
         >
             {additionalContent}
@@ -32,7 +33,7 @@ function AboutSection({ chatData, currentChat, connection, userRole, onlineUsers
     );
 
     const renderButton = (item) => {
-        if (isModer && item.Role !== "Moder" && item.Role !== "Owner") {
+        if (isAbleToKick(userRole,item.Role)) {
             return (
                 <button className="kickBtn" onClick={(e) => { e.stopPropagation(); handleKickModal(item) }}>
                     Kick
@@ -42,7 +43,7 @@ function AboutSection({ chatData, currentChat, connection, userRole, onlineUsers
     };
 
     const handleKick = (item) => {
-        connection.invoke("Kick", currentChat.Id, item.Id);
+        Kick(connection,currentChat.Id,item.Id);
         handleKickModal(null);
     }
 
@@ -81,19 +82,11 @@ function AboutSection({ chatData, currentChat, connection, userRole, onlineUsers
         );
     };
 
-    const OpenOrCreateDialog = (userId) => {
-        const filteredChats = chatData.chats.filter((chat) => chat.Companion && chat.Companion.Id === userId);
-        if (filteredChats.length > 0) {
-            setCurrentChatId(filteredChats[0].Id);
-        } else {
-            connection.invoke("CreateDialog", userId);
-        }
-        setAboutBox("Files");
-    }
+    
 
     const renderedMembersSection = useMemo(() => {
         if (currentChat && currentChat.Users && currentChat.Users.length > 0) {
-            return currentChat.Users.reverse().map((item) => (
+            return currentChat.Users.slice().reverse().map((item) => (
                 renderDialogCard(item, (
                     <>
                         {renderRole(item)}
@@ -103,14 +96,14 @@ function AboutSection({ chatData, currentChat, connection, userRole, onlineUsers
             ));
         }
         return null;
-    }, [currentChat, aboutBox]);
+    }, [currentChat, aboutSection]);
 
     const renderedSpecialSection = useMemo(() => {
         if (currentChat && currentChat.Users && currentChat.Users.length > 0) {
             const filteredUsers = currentChat.Users.filter((p) => p.Role === role);
             return filteredUsers.map((item) => (
                 renderDialogCard(item, (
-                    <button onClick={(e) => { e.stopPropagation(); connection.invoke(`MakeReader`, currentChat.Id, item.Id) }}>
+                    <button onClick={(e) => { e.stopPropagation(); updateRole(connection, currentChat.Id, item.Id, "Reader"); }}>
                         Remove
                     </button>
                 ))
@@ -119,14 +112,14 @@ function AboutSection({ chatData, currentChat, connection, userRole, onlineUsers
         return null;
     }, [currentChat, role, onlineUsers]);
 
-    const handleAddSpecial = (id) => {
-        connection.invoke(`Add${role}`, currentChat.Id, id);
+    const handleUpdateRole = (id) => {
+        updateRole(connection, currentChat.Id, id, role);
         handleAddSpecialModal();
     }
 
     useEffect(() => {
         if (currentChat.Type === "Dialog") {
-            setAboutBox("Files")
+            setAboutSection("Files")
         }
         else if (currentChat.Type === "Group") {
             setRole("Moder");
@@ -138,7 +131,7 @@ function AboutSection({ chatData, currentChat, connection, userRole, onlineUsers
             {currentChat && currentChat.Users &&
                 (<UserListModal open={addSpecialModal}
                     close={handleAddSpecialModal}
-                    onClick={handleAddSpecial}
+                    onClick={handleUpdateRole}
                     list={currentChat.Users.filter((item) => item.Role === "Reader")} />)}
             
             {userToKick && (
@@ -152,14 +145,14 @@ function AboutSection({ chatData, currentChat, connection, userRole, onlineUsers
             <div className="aboutButtonsTop">
                 {currentChat && currentChat.Type !== "Dialog" && (
                     <>
-                        <button className={aboutBox === "Files" ? "active" : ""} onClick={() => setAboutBox("Files")}>
+                        <button className={aboutSection === "Files" ? "active" : ""} onClick={() => setAboutSection("Files")}>
                             Files
                         </button>
-                        <button className={aboutBox === "Members" ? "active" : ""} onClick={() => setAboutBox("Members")}>
+                        <button className={aboutSection === "Members" ? "active" : ""} onClick={() => setAboutSection("Members")}>
                             Members
                         </button>
                         { userRole === "Owner" && (
-                            <button className={aboutBox === "Management" ? "active" : ""} onClick={() => setAboutBox("Management")}>
+                            <button className={aboutSection === "Management" ? "active" : ""} onClick={() => setAboutSection("Management")}>
                                 Manage
                             </button>
                         )}
@@ -169,7 +162,7 @@ function AboutSection({ chatData, currentChat, connection, userRole, onlineUsers
 
             {chatData && currentChat && (
                 <div className="aboutContent">
-                    {aboutBox === "Files" ? (
+                    {aboutSection === "Files" ? (
                         currentChat.Messages.map((item) => {
                             return (
                                 item.Files && item.Files.length > 0 && (
@@ -183,9 +176,9 @@ function AboutSection({ chatData, currentChat, connection, userRole, onlineUsers
                         })
                     ) : currentChat.Type !== "Dialog" ? (
                         <>
-                                {aboutBox === "Members" ? (
+                                {aboutSection === "Members" ? (
                                     <div className="membersSection">{renderedMembersSection}</div>
-                                ) : aboutBox === "Management" ? (
+                                ) : aboutSection === "Management" ? (
                                     <div className="managementSection">
                                         {currentChat.Type === "Channel" && (<div className="managementSpecialsBtns">
                                             <button className={`btn ${role === "Publisher" ? "active" : ""}`} onClick={() => setRole("Publisher")}>

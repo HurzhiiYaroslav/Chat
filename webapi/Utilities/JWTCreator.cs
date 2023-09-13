@@ -4,7 +4,7 @@ using System.Security.Claims;
 using System.Text;
 using webapi.Entities;
 
-namespace webapi.Utils
+namespace webapi.Utilities
 {
     public static class JWTCreator
     {

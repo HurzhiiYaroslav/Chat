@@ -5,7 +5,7 @@ import Chat from './Pages/Chat/Chat';
 import NotFound from './Pages/NotFound/NotFound';
 import {  Routes, Route, useNavigate } from 'react-router-dom';
 import "./App.scss"
-import ProtectedRoute from './Utils/ProtectedRoute';
+import ProtectedRoute from './Utilities/ProtectedRoute';
 
 const App = () => {
     const navigate = useNavigate();
