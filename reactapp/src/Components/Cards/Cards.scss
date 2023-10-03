@@ -1,0 +1,111 @@
+.Item {
+    display: flex;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid dimgray;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-bottom: 5px;
+    flex-wrap: wrap;
+
+    .Logo {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+
+    .unread-count {
+        background-color: #008eff;
+        color: white;
+        padding: 5px;
+        border-radius: 50%;
+        margin: auto 0;
+        margin-left: auto;
+        width: 20px;
+        height: 20px;
+        text-align: center;
+        line-height: 20px;
+    }
+
+    &:hover {
+        background-color: #ebebeb;
+    }
+
+    &:active {
+        background-color: #dcdcdc;
+    }
+}
+
+.GroupItem, .ChannelItem {
+    @extend .Item;
+    background-color: #f5f5f5;
+
+    .Logo {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+
+    .GroupInfo {
+        margin: 0 10px;
+
+        .GroupTitle {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0px;
+            overflow: hidden;
+            max-width: 13vw;
+            word-wrap: break-word;
+            max-height: 7vh;
+        }
+
+        .GroupMembers {
+            font-size: 14px;
+            color: darkgray;
+        }
+    }
+}
+
+.DialogItem {
+    @extend .Item;
+    background-color: #f2f2f2;
+
+    .PhotoBox {
+        position: relative;
+        margin-right: 10px;
+        width: 40px;
+        height: 40px;
+    }
+
+    .CompanionName {
+        font-size: 16px;
+        font-weight: bold;
+        max-width: 170px;
+        overflow-wrap: break-word;
+        margin: auto 0;
+    }
+
+    .marker {
+        position: absolute;
+        bottom: 1px;
+        right: 0.1vw;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+    }
+
+    .marker.online {
+        background-color: green;
+    }
+
+    .marker.offline {
+        background-color: red;
+    }
+}
+
+.active-chat {
+    border-left: 5px solid #0056b3;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
+}

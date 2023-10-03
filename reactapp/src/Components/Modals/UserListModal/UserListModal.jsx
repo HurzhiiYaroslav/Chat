@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Modal from "../../General/Modal/Modal"
-import DialogCard from '../../Cards/Dialog/DialogCard';
+import { DialogCard } from '../../Cards/Cards';
 import "./UserListModal.scss"
 
 function UserListModal({ close, open, list, onClick }) {

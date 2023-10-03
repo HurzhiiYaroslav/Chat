@@ -71,7 +71,7 @@ function CreateChatModal({setChatData,connection,setCurrentChatId,close,open }) 
                   <button className={`chatTypeBtn  ${newChatType === "Channel" ? "active" : ""}`} onClick={() => setNewChatType("Channel")}>Channel</button>
               </div>
 
-              <div class="buttonGroup">
+              <div className="buttonGroup">
                   <button className="createBtn" onClick={createNewChat}>Create</button>
                   <button className="closeBtn" onClick={handleNewChatModal}>Close</button>
               </div>

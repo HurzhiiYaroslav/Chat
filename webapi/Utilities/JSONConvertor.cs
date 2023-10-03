@@ -5,6 +5,7 @@
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 using webapi.Entities;
 
 namespace webapi.Utilities
@@ -112,30 +113,39 @@ namespace webapi.Utilities
         public static JObject GroupToJsonObject(Group group)
         {
             var jsonObject = new JObject
-        {
-            { "Id", group.Id },
-            { "Type", "Group" },
-            { "Title", group.Title },
-            { "Description", group.Description },
-            { "Logo", group.Logo },
-            { "Users", JArray.FromObject(group.Enrollments.Select(EnrollmentToJsonObject)) },
-            { "Messages", JArray.FromObject(group.Messages.OrderByDescending(m => m.Timestamp).Reverse().Select(MessageToJsonObject)) }
-        };
-
+            {
+                { "Id", group.Id },
+                { "Type", "Group" },
+                { "Title", group.Title },
+                { "Description", group.Description },
+                { "Logo", group.Logo },
+                { "Users", JArray.FromObject(group.Enrollments.Select(EnrollmentToJsonObject)) },
+                { "Messages", JArray.FromObject(group.Messages.OrderByDescending(m => m.Timestamp).Reverse().Select(MessageToJsonObject)) },
+            };
+            LastSeenMessege(group.Messages, jsonObject);
             return jsonObject;
         }
 
         public static JObject DialogToJsonObject(Dialog dialog, User user)
         {
             var jsonObject = new JObject
-        {
-            { "Id", dialog.Id },
-            { "Type", "Dialog" },
-            { "Companion", dialog.CompaionInfo(user) },
-            { "Messages", JArray.FromObject(dialog.Messages.OrderByDescending(m => m.Timestamp).Reverse().Select(MessageToJsonObject)) }
-        };
-
+            { 
+                { "Id", dialog.Id },
+                { "Type", "Dialog" },
+                { "Companion", dialog.CompaionInfo(user) },
+                { "Messages", JArray.FromObject(dialog.Messages.OrderByDescending(m => m.Timestamp).Reverse().Select(MessageToJsonObject)) },
+            };
+            LastSeenMessege(dialog.Messages, jsonObject);
             return jsonObject;
+        }
+
+        private static JObject LastSeenMessege(List<Message> messages,JObject obj) {
+            var lastSeenMessage = messages
+               .Where(m => m.IsSeen)
+               .OrderByDescending(m => m.Timestamp)
+               .FirstOrDefault();
+            obj.Add("LastSeenMessage", MessageToJsonObject(lastSeenMessage));
+            return obj;
         }
 
         public static JObject ChannelToJsonObject(Channel channel)
@@ -188,8 +198,8 @@ namespace webapi.Utilities
             { "Id", message.Id },
             { "sender", message.Sender.Id },
             { "content", message.Content },
-            { "time", message.Timestamp.ToString() },
-            { "Files", JArray.FromObject(message.Files.Select(FileToJsonObject)) }
+            { "time", message.Timestamp.ToString("yyyy-MM-ddTHH:mm:ss") },
+            { "Files", JArray.FromObject(message.Files?.Select(FileToJsonObject)) }
         };
 
             return jsonObject;

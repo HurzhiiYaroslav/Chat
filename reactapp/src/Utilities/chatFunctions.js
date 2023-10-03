@@ -49,3 +49,30 @@ export const DownloadFile = (file) => {
             console.error('Error:', error);
         });
 }
+
+export const findLastMessage = (chat) => {
+    if (!chat || !chat.Messages) {
+        return null;
+    }
+
+    if (chat.Type === "Channel") {
+        return chat.Messages[chat.Messages.length - 1];
+    }
+    else {
+        const user = localStorage.getItem('currentUser');
+        const userMes = chat.Messages
+            .slice()
+            .reverse()
+            .find((m) => m.sender === user);
+
+        const mes = chat.Messages.find((m) => {
+            const time1 = new Date(m.time);
+            const time2 = new Date(chat.LastSeenMessage.time);
+            return time1 >= time2;
+        });
+
+        return userMes && mes && (
+            new Date(userMes.time) >= new Date(mes.time) ? userMes : mes
+        );
+    }
+};

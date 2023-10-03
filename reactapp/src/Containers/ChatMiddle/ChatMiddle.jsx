@@ -3,15 +3,18 @@ import axios from 'axios';
 import MessageItem from "../../Components/MessageItem/MessageItem";
 import AttachMediaModal from "../../Components/Modals/AttachMediaModal/AttachMediaModal";
 import AttachedMedia from "../../Components/AttachedMedia/AttachedMedia";
+import MessageBox from "../../Components/MessageBox/MesageBox"
 import ChatRight from "../ChatRight/ChatRight";
-import { SendMessageUrl } from "../../Links";    
-import "./ChatMiddle.scss"
+import { SendMessageUrl } from "../../Links";
+import { MarkAsSeen } from "../../Utilities/signalrMethods"
+import "./ChatMiddle.scss";
 
 function ChatMiddle({ connection, chatData, onlineUsers, currentChatId, setCurrentChatId } ) {
-    const scrollRef = useRef(null);
     const [currentChat, setCurrentChat] = useState(null);
     const [mesText, setMesText] = useState("");
     const [mesFiles, setMesFiles] = useState([]);
+    const [modal, setModal] = useState(false);
+    
 
     useEffect(() => {
         if (chatData) {
@@ -19,10 +22,6 @@ function ChatMiddle({ connection, chatData, onlineUsers, currentChatId, setCurre
         }
     }, [currentChatId, chatData])
 
-    useEffect(() => {
-    }, [currentChat?.Id])
-
-    const [modal, setModal] = useState(false)
     const handleDrop = (event) => {
         const files = event.dataTransfer.files;
         
@@ -64,75 +63,10 @@ function ChatMiddle({ connection, chatData, onlineUsers, currentChatId, setCurre
         }
     }
 
-    function groupMessagesByDate(messages) {
-        const groupedMessages = {};
-        for (const message of messages) {
-            const date = new Date(message.time).toLocaleDateString();
-            if (!groupedMessages[date]) {
-                groupedMessages[date] = [];
-            }
-            groupedMessages[date].push(message);
-        }
-        return groupedMessages;
-    }
-
-    const messages = useMemo(() => {
-        if (currentChat && currentChat.Messages && currentChat.Messages.length > 0) {
-            const groupedMessages = groupMessagesByDate(currentChat.Messages);
-            return Object.entries(groupedMessages).map(([date, messages]) => (
-                <>
-                    <div key={date} className="date-header">{date}</div>
-                    {messages.map((item, index) => (
-                        item.notification ? (
-                            <div key={index} className="notification">{item.notification}</div>
-                        ) : (
-                            <MessageItem
-                                key={item.Id}
-                                item={item}
-                                chatData={chatData}
-                                currentChat={currentChat}
-                                connection={connection}
-                                setCurrentChatId={setCurrentChatId}
-                            />
-                        )
-                    ))}
-                </>
-            )
-            );
-        } else {
-            return null;
-        }
-        
-    }, [currentChat]);
-
     function isPublisher() {
         const userId = localStorage.getItem("currentUser");
         return currentChat.Users ? currentChat.Users.some(p => p.Id === userId && p.Role!=="Reader") : true;
     }
-
-    const ScrollDown = () => {
-        const timeoutId = setTimeout(() => {
-            if (scrollRef.current) {
-                const scrollContainer = scrollRef.current;
-                const lastMessage = scrollContainer.lastElementChild;
-                if (lastMessage) {
-                    lastMessage.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'end'
-                    });
-                }
-            }
-        }, 1);
-
-        return () => {
-            clearTimeout(timeoutId);
-        };
-        
-    }
-
-    useEffect(() => {
-            ScrollDown();
-    }, [currentChat?.Id]);
 
     return (
         <>
@@ -148,9 +82,7 @@ function ChatMiddle({ connection, chatData, onlineUsers, currentChatId, setCurre
             /> 
             <div className="chatMiddle">
                 <div className="MessagesWrapper">
-                    <div className="messageBox" ref={scrollRef}>
-                        {messages}
-                    </div>
+                    <MessageBox currentChat={currentChat} chatData={chatData} connection={connection} setCurrentChatId={setCurrentChatId} />
                     {currentChat && (currentChat.Type !== "Channel" ||  isPublisher()) && <>
                     <AttachedMedia mesFiles={mesFiles} setMesFiles={setMesFiles} />
                     <div className="inputBox">

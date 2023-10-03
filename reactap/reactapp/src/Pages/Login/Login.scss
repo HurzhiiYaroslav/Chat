@@ -1,0 +1,48 @@
+#loginform {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 300px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+#loginform label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+#loginform input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+#loginform button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#loginform button:hover {
+    background-color: #45a049;
+}
+
+#loginform a {
+    margin-top: 10px;
+    text-align: center;
+    text-decoration: none;
+    color: #0645AD;
+}
+
+#loginform a:hover {
+    text-decoration: underline;
+}

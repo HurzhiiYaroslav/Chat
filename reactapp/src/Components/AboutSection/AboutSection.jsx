@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import DialogCard from '../Cards/Dialog/DialogCard';
+import { DialogCard } from '../Cards/Cards';
 import FileItem from '../FileItem/FileItem';
 import UserListModal from '../Modals/UserListModal/UserListModal';
 import DoYouWantModal from '../Modals/DoYouWantModal/DoYouWantModal';
@@ -16,7 +16,7 @@ function AboutSection({ chatData, currentChat, connection, userRole, onlineUsers
 
     const publicity = currentChat && currentChat.isPublic ? "Public" : "non-Public";
 
-    const changePublicity = (chatId) => {
+    const changePublic = (chatId) => {
         changePublicity(connection, chatId);
     }
 
@@ -196,7 +196,7 @@ function AboutSection({ chatData, currentChat, connection, userRole, onlineUsers
                                         {currentChat.Type === "Channel" && (<div className="managePublicity">
                                             <label className="publicityStatus">Publicity:</label>
                                             <div className={"publicityStatus " + publicity}>{publicity}</div>
-                                            <button className="changePublicityBtn" onClick={() => changePublicity(currentChat.Id)}>
+                                                <button className="changePublicityBtn" onClick={() => changePublic(currentChat.Id)}>
                                                 Change
                                             </button>
                                         </div>)}

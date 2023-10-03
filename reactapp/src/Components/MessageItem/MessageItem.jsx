@@ -53,6 +53,12 @@ function MessageItem({ item, chatData, currentChat, connection, setCurrentChatId
         return null;
     };
 
+    const isSeen = (item) => {
+        const lastSeen = new Date(currentChat.LastSeenMessage.time);
+        const itemTime = new Date(item.time);
+        return itemTime <=lastSeen
+    }
+
     useEffect(() => {
         const foundSender = currentChat?.Users?.find((element) => element.Id === item.sender);
         if (currentChat && currentChat.Companion && !foundSender) {
@@ -83,7 +89,7 @@ function MessageItem({ item, chatData, currentChat, connection, setCurrentChatId
                 >
                 </MessageContext>)}
 
-            <div key={item.Id} onClick={handleContextModal} className={`MessageItem ${item.sender === currentUser ? "User" : ""}`}>
+            <div id={item.Id} onClick={handleContextModal} className={`MessageItem ${item.sender === currentUser ? "User" : ""}`}>
                 {(sender || currentChat.Companion) && (
                     <div className="PhotoBox" >
                         <img
@@ -98,7 +104,11 @@ function MessageItem({ item, chatData, currentChat, connection, setCurrentChatId
                 {renderAttachedImages()}
                 {renderMessageMedia()}
                 {item.content && <p className="MessageContent">{item.content}</p>}
-                <p className="MessageTime">{ConvertTime(item.time)}</p>
+                <div className="footer">
+                    <p className="SeenStatus">{isSeen(item) && (<span className="icon">&#10003;</span>)}</p>
+                    <p className="MessageTime">{ConvertTime(item.time)}</p>
+                </div>
+                
             </div>
         </>
     );

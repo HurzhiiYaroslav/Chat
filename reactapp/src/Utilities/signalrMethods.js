@@ -19,7 +19,7 @@ export const joinChannel = (connection, channelId) => {
 };
 
 export const searchChats = (connection, fieldInput) => {
-    connection.invoke("SearchChats", fieldInput)
+    return connection.invoke("SearchChats", fieldInput)
 };
 
 export const Invite = (connection, userId, currentChatId) => {
@@ -28,4 +28,8 @@ export const Invite = (connection, userId, currentChatId) => {
 
 export const Leave = (connection, ChatId) => {
     connection.invoke("Leave", ChatId);
+};
+
+export const MarkAsSeen = (connection, chatId, MesId) => {
+    connection.invoke("MarkAsSeen",chatId, MesId);
 };

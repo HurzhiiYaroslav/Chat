@@ -22,6 +22,7 @@ namespace webapi.Entities
         public  User? User { get; set; }
         public Guid GroupId { get; set; }
         public  Group? Group { get; set; }
+        public string? LastSeenMes { get; set; } = "";
         public Role Role { get; set; } = Role.Reader;
 
     }

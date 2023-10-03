@@ -69,7 +69,7 @@ namespace webapi.Hubs
 
         public async Task AddUserToGroups(string userId, List<Chat> chats)
         {
-            var tasks = chats.Select(chat => Groups.AddToGroupAsync(userId, chat.Id.ToString()));
+            var tasks = chats.Select(chat => Groups.AddToGroupAsync(userId, chat.Id.ToString().ToLower()));
             await Task.WhenAll(tasks);
         }
 
@@ -78,6 +78,21 @@ namespace webapi.Hubs
             var username = connectedUsers[Context.ConnectionId];
             var user = await db.Users.Include(u => u.Dialogs).Include(u=>u.Channels).FirstOrDefaultAsync(u => u.Id.ToString().ToUpper() == username.ToString().ToUpper());
             return JSONConvertor.ConvertUserSearchToJson(user, userInput, db);
+        }
+
+        public async Task MarkAsSeen(string chatId,string mesId)
+        {
+            Console.WriteLine("+++++++++++++++++++++++++++++++++++++++1");
+            if(chatId==null|| mesId==null) return;
+            var user = await GetCurrentUserAsync();
+            var mes = await db.Messages.Include(m => m.Sender).FirstOrDefaultAsync(m => m.Id.ToString().ToLower()==mesId);
+            var chat = await db.GetChatById(chatId);
+            Console.WriteLine("+++++++++++++++++++++++++++++++++++++++2");
+            if (mes==null || mes.Sender == user || mes.IsSeen || !chat.Messages.Contains(mes)) return;
+            
+            mes.IsSeen = true;
+            await db.SaveChangesAsync();
+            await Clients.Group(chatId).SendAsync("MessageHasSeen", JSONConvertor.MessageToJsonObject(mes).ToString(),chatId);
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)

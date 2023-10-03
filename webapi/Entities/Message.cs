@@ -4,10 +4,10 @@
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public string? Content { get; set; } = "";
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
-
+        public DateTime Timestamp { get; set; } = DateTime.Now;
+        public bool IsSeen { get; set; } = false;
         public ICollection<FileEntity> Files { get; set; } = new List<FileEntity>();
-        public User Sender { get; set; }
+        public required User Sender { get; set; }
     }
 
     public class FileEntity

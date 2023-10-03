@@ -149,7 +149,6 @@ const useChatEventHandlers = (connection, setChatData, setCurrentChatId, setOnli
         };
 
         const handleReceiveMessage = (data, chatId) => {
-            console.log("faf");
             const mes = JSON.parse(data);
             setChatData((prevChatData) => {
                 const updatedChats = prevChatData.chats.map((chat) => {
@@ -234,6 +233,26 @@ const useChatEventHandlers = (connection, setChatData, setCurrentChatId, setOnli
             });
         };
 
+        const handleSeenMessage = (data, chatId) => {
+            const mes = JSON.parse(data);
+            setChatData((prevChatData) => {
+                const updatedChats = prevChatData.chats.map((chat) => {
+                    if (chat.Id === chatId) {
+                        return {
+                            ...chat,
+                            LastSeenMessage: mes,
+                        };
+                    }
+                    return chat;
+                });
+
+                return {
+                    ...prevChatData,
+                    chats: updatedChats,
+                };
+            });
+        };
+
         connection.on('ConnectedUsers', handleConnectedUsers);
         connection.on('UserConnected', handleUserConnected);
         connection.on('UserData', handleUserData);
@@ -247,6 +266,7 @@ const useChatEventHandlers = (connection, setChatData, setCurrentChatId, setOnli
         connection.on('Relogin', handleRelogin);
         connection.on('publicityChanged', handlePublicity);
         connection.on('updateEnrollment', handleUpdateEnrollment);
+        connection.on("MessageHasSeen", handleSeenMessage);
 
         return () => {
             connection.off('ConnectedUsers', handleConnectedUsers);
@@ -262,6 +282,7 @@ const useChatEventHandlers = (connection, setChatData, setCurrentChatId, setOnli
             connection.off('Relogin', handleRelogin);
             connection.off('publicityChanged', handlePublicity);
             connection.off('updateEnrollment', handleUpdateEnrollment);
+            connection.off("MessageHasSeen", handleSeenMessage);
         };
     }, [connection, navigate, setChatData, setCurrentChatId, setOnlineUsers]);
 };

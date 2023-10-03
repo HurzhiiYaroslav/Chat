@@ -23,7 +23,7 @@ namespace webapi.Services
                 return GenerateRandomColor();
 
             var fileName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
-            var filePath = Path.Combine("wwwroot/Media", fileName);
+            var filePath = Path.Combine("wwwroot/Avatars", fileName);
 
             Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 

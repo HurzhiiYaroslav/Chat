@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import DialogCard from "../Cards/Dialog/DialogCard"
-import GroupCard from "../Cards/Group/GroupCard"
-import ChannelCard from "../Cards/Channel/ChannelCard"
+import React, { useState, useEffect,useMemo } from 'react';
+import {DialogCard,GroupCard,ChannelCard } from "../Cards/Cards"
 import { createDialod, joinChannel, searchChats } from '../../Utilities/signalrMethods';
+import { findLastMessage } from '../../Utilities/chatFunctions';
 import "./ChatList.scss"
+
 function ChatList({ connection, chatData, onlineUsers, setCurrentChatId,currentChatId }) { 
     const [listMode, setListMode] = useState("Filter");
     const [fieldInput, setFieldInput] = useState("");
@@ -67,6 +67,75 @@ function ChatList({ connection, chatData, onlineUsers, setCurrentChatId,currentC
         }
     }
 
+    const chatCards = useMemo(() => {
+        return chatData.chats
+            .filter(Filter)
+            .map((item) => {
+                let chatCard = null;
+                const extraClass = `${item.Id === currentChatId ? 'active-chat' : ''}`;
+                let unreadCount = 0;
+                const unreadMes = findLastMessage(item);
+
+                if (unreadMes) {
+                    const unreadIndex = item.Messages.indexOf(unreadMes);
+                    if (unreadIndex >= 0) {
+                        unreadCount = item.Messages.length - unreadIndex - 1;
+                    }
+                }
+
+                if (item.Type === "Dialog") {
+                    chatCard = <DialogCard key={item.Id} item={item} onlineUsers={onlineUsers} func={setCurrentChatId} connection={connection} extraClasses={extraClass} >
+                        {unreadCount > 0 && (<div className="unread-count">{unreadCount}</div>) }
+                    </DialogCard >;
+                } else if (item.Type === "Group") {
+                    chatCard = <GroupCard key={item.Id} item={item} onlineUsers={onlineUsers} setCurrentChatId={setCurrentChatId} extraClasses={extraClass} >
+                        {unreadCount > 0 && (<div className="unread-count">{unreadCount}</div>)}
+                    </GroupCard >;                        ;
+                } else if (item.Type === "Channel") {
+                    chatCard = <ChannelCard key={item.Id} item={item} func={setCurrentChatId} extraClasses={extraClass} >
+                        {unreadCount > 0 && (<div className="unread-count">{unreadCount}</div>)}
+                    </ChannelCard >;
+                }
+
+                return chatCard;
+            });
+    }, [chatData.chats, currentChatId, onlineUsers, connection]);
+
+    const foundUsersSection = useMemo(() => {
+        return (
+            <div className={`FoundUsers ${foundUsersMode}`}>
+                <p onClick={() => { ExpandAndHide(foundUsersMode, setFoundUsersMode, foundChannelsMode, setFoundChannelsMode) }}>Users:</p>
+                <div className={`Inner`} >
+                    {foundData && foundData.Users && foundData.Users.length > 0 ? (
+                        foundData.Users.map((item) => {
+                            return <DialogCard key={item.Id} item={item} onlineUsers={onlineUsers} func={CreateDialog} />;
+                        })
+                    ) : (
+                        <>empty</>
+                    )}
+                </div>
+            </div>
+        );
+    }, [foundUsersMode, setFoundUsersMode, foundChannelsMode, setFoundChannelsMode, foundData, onlineUsers]);
+
+    const foundChannelsSection = useMemo(() => {
+        return (
+            <div className={`FoundChannels ${foundChannelsMode}`}>
+                <p onClick={() => { ExpandAndHide(foundChannelsMode, setFoundChannelsMode, foundUsersMode, setFoundUsersMode) }}>Channels:</p>
+                <div className={`Inner`} >
+                    {foundData && foundData.Channels && foundData.Channels.length > 0 ? (
+                        foundData.Channels.map((item) => {
+                            return <ChannelCard key={item.Id} item={item} func={JoinChannel} />;
+                        })
+                    ) : (
+                        <>empty</>
+                    )}
+                </div>
+            </div>
+        );
+    }, [foundChannelsMode, setFoundChannelsMode, foundUsersMode, setFoundUsersMode, foundData]);
+
+
     useEffect(() => {
         if (fieldInput === "") {
             setFoundData(null);
@@ -111,55 +180,11 @@ function ChatList({ connection, chatData, onlineUsers, setCurrentChatId,currentC
             </div>
             <div className="List">
                 {chatData && listMode === "Filter" ? (
-                    chatData.chats.length > 0 ? (
-                        chatData.chats
-                            .filter(Filter)
-                            .map((item) => {
-                                let chatCard = null;
-
-                                if (item.Type === "Dialog") {
-                                    chatCard = <DialogCard key={item.Id} item={item} onlineUsers={onlineUsers} func={setCurrentChatId} connection={connection} />;
-                                } else if (item.Type === "Group") {
-                                    chatCard = <GroupCard key={item.Id} item={item} onlineUsers={onlineUsers} setCurrentChatId={setCurrentChatId} />;
-                                } else if (item.Type === "Channel") {
-                                    chatCard = <ChannelCard key={item.Id} item={item} func={setCurrentChatId} />;
-                                }
-                                return (
-                                    <div key={item.Id}>
-                                        {chatCard}
-                                    </div>
-                                );
-                        })
-                    ) : (
-                        <div>empty</div>
-                    )
+                    chatCards
                 ) : listMode === "Search" ? (
                     <>
-                            <div className={`FoundUsers ${foundUsersMode}`} >
-                                <p onClick={() => { ExpandAndHide(foundUsersMode, setFoundUsersMode, foundChannelsMode, setFoundChannelsMode) }}>Users:</p>
-                                <div className={`Inner`} >
-                                    {foundData && foundData.Users && foundData.Users.length > 0 ? (
-                                        foundData.Users.map((item) => {
-                                            return <DialogCard key={item.Id} item={item} onlineUsers={onlineUsers} func={CreateDialog} />;
-                                        })
-                                    ) : (
-                                        <>empty</>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className={`FoundChannels ${foundChannelsMode}`} >
-                                <p onClick={() => { ExpandAndHide(foundChannelsMode, setFoundChannelsMode, foundUsersMode, setFoundUsersMode) }}>Channels:</p>
-                                <div className={`Inner`} >
-                                    {foundData && foundData.Channels && foundData.Channels.length > 0 ? (
-                                        foundData.Channels.map((item) => {
-                                            return <ChannelCard key={item.Id} item={item} func={JoinChannel} />;
-                                        })
-                                    ) : (
-                                        <>empty</>
-                                    )}
-                                </div>
-                            </div>
+                            {foundUsersSection}
+                            {foundChannelsSection}
                     </>
                 ) : (
                     <div>empty</div>

@@ -12,10 +12,6 @@
     <BuildOutputFolder>$(MSBuildProjectDirectory)\build</BuildOutputFolder>
   </PropertyGroup>
   <ItemGroup>
-    <Folder Include="src\Components\Cards\Dialog\" />
-    <Folder Include="src\Components\Cards\Group\" />
-    <Folder Include="src\Components\Cards\Channel\" />
-    <Folder Include="src\Components\Cards\Channel\" />
     <Folder Include="src\Components\General\Loading\" />
     <Folder Include="src\Components\Modals\AttachMediaModal\" />
     <Folder Include="src\Components\General\Modal\" />
@@ -28,5 +24,6 @@
     <Folder Include="src\Components\Modals\EditGroupModal\" />
     <Folder Include="src\Components\GroupHeader\" />
     <Folder Include="src\Components\AboutSection\" />
+    <Folder Include="src\Components\MessageBox\" />
   </ItemGroup>
 </Project>

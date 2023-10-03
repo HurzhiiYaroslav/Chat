@@ -13,6 +13,7 @@ namespace webapi.Entities
         public User User1 { get; set; }
         public User User2 { get; set; }
 
+
         public bool Contains(User u)
         {
             return User1.Id == u.Id || User2.Id == u.Id;

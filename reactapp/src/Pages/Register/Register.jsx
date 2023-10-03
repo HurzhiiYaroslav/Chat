@@ -28,8 +28,17 @@ function RegisterPage() {
             if (login.length < 4) {
                 throw new Error('Login must be at least 4 characters');
             }
+            if (login.length > 40) {
+                throw new Error('Login must be shorter than 40 characters');
+            }
             if (password.length < 4) {
                 throw new Error('Password must be at least 4 characters');
+            }
+            if (password.length > 40) {
+                throw new Error('Password must be shorter than 40 characters');
+            }
+            if (username.length < 1) {
+                throw new Error('Password must be at least 1 characters');
             }
             if (username.length > 30) {
                 throw new Error('Username must be shorter than 30 characters');

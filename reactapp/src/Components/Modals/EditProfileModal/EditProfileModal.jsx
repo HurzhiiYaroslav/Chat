@@ -42,6 +42,8 @@ function EditProfileModal({open,close }) {
             return;
         }
 
+
+
         const headers = {
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'multipart/form-data',

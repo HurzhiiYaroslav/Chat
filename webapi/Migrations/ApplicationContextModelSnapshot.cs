@@ -49,10 +49,11 @@ namespace webapi.Migrations
                     b.Property<Guid>("GroupId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("LastSeenMes")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Role")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(2);
+                        .HasColumnType("int");
 
                     b.HasKey("UserId", "GroupId");
 
@@ -101,6 +102,9 @@ namespace webapi.Migrations
                     b.Property<string>("Content")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsSeen")
+                        .HasColumnType("bit");
+
                     b.Property<Guid>("SenderId")
                         .HasColumnType("uniqueidentifier");
 
@@ -141,32 +145,6 @@ namespace webapi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("49fc0230-c712-4ad6-aafc-f351ea0f947b"),
-                            Login = "User1",
-                            Name = "Tom",
-                            Password = "$2a$11$iI/tPE0O..bAZSBl0USbl.ueTyry8uOV0PhPWgQL6nF6d3KOGUB.m",
-                            Photo = "default.jpg"
-                        },
-                        new
-                        {
-                            Id = new Guid("cf41f811-9951-4174-946b-c46ad61d742e"),
-                            Login = "User2",
-                            Name = "Bob",
-                            Password = "$2a$11$7TVNy5FcGPLKZlC.BlqTe.Bam3pAjnXrEgfwpIxFh5FhgJfcexj0W",
-                            Photo = "default.jpg"
-                        },
-                        new
-                        {
-                            Id = new Guid("062c2010-27cd-4801-8444-580cae44f369"),
-                            Login = "User3",
-                            Name = "Samuel",
-                            Password = "$2a$11$Wgz3ant58TxqeE3d4CqGROjvQVQuOYkmCDDqm7E62bpCgb2c4eNeW",
-                            Photo = "default.jpg"
-                        });
                 });
 
             modelBuilder.Entity("webapi.Entities.Dialog", b =>
@@ -201,9 +179,6 @@ namespace webapi.Migrations
                 {
                     b.HasBaseType("webapi.Entities.Chat");
 
-                    b.Property<Guid>("CreatorId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -215,8 +190,6 @@ namespace webapi.Migrations
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.HasIndex("CreatorId");
 
                     b.HasDiscriminator().HasValue("Group");
                 });
@@ -298,17 +271,6 @@ namespace webapi.Migrations
                     b.Navigation("User1");
 
                     b.Navigation("User2");
-                });
-
-            modelBuilder.Entity("webapi.Entities.Group", b =>
-                {
-                    b.HasOne("webapi.Entities.User", "Creator")
-                        .WithMany()
-                        .HasForeignKey("CreatorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Creator");
                 });
 
             modelBuilder.Entity("webapi.Entities.Channel", b =>

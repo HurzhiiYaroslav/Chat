@@ -1,0 +1,86 @@
+
+.ListWrapper {
+    height: 100%;
+}
+
+.Bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.BarField {
+    padding: 5px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+}
+
+.BarBtns {
+    margin-left: 10px;
+}
+
+.btn {
+    width: 100%;
+    padding: 2px 5px;
+    font-size: 16px;
+    border: 1px solid DimGrey;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn.active {
+    background-color: #ccc;
+}
+
+.List {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    max-height: 75vh;
+    overflow: auto;
+
+    .FoundUsers, .FoundChannels {
+        margin-bottom: 2px;
+        border: 1px solid grey;
+        border-radius: 15px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        transition: height 0.5s ease;
+
+        &.full {
+            height: 100%;
+        }
+
+        &.collapsed {
+            height: 10%;
+            overflow-y: hidden;
+        }
+
+        p {
+            cursor: pointer;
+            text-align: center;
+            padding: 5px;
+            background-color: #72727e4a;
+            margin: 0px;
+        }
+
+        .Inner {
+            padding: 10px;
+        }
+    }
+
+
+    .hidden {
+        display: none;
+    }
+}
+
+
+
+
+
+
+
+
