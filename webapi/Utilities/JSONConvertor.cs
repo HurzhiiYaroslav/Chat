@@ -144,6 +144,7 @@ namespace webapi.Utilities
                .Where(m => m.IsSeen)
                .OrderByDescending(m => m.Timestamp)
                .FirstOrDefault();
+            if (lastSeenMessage is null) return null;
             obj.Add("LastSeenMessage", MessageToJsonObject(lastSeenMessage));
             return obj;
         }

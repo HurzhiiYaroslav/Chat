@@ -19,7 +19,7 @@ export const getCurrentUserRole = (currentChat) => {
 
 export const isAbleToKick = (userRole, punishedRole) => {
     const isModer = userRole === "Moder" || userRole === "Owner";
-    return isModer && (userRole !== punishedRole || punishedRole !== "Owner");
+    return isModer && (userRole !== punishedRole && punishedRole !== "Owner");
 }
 
 export const DownloadFile = (file) => {
@@ -64,15 +64,16 @@ export const findLastMessage = (chat) => {
             .slice()
             .reverse()
             .find((m) => m.sender === user);
+        let lastSeenMessage = chat.LastSeenMessage;
+        if (!lastSeenMessage) {
+            return userMes;
+        }
+        else if (!userMes) return lastSeenMessage;
 
-        const mes = chat.Messages.find((m) => {
-            const time1 = new Date(m.time);
-            const time2 = new Date(chat.LastSeenMessage.time);
-            return time1 >= time2;
-        });
-
-        return userMes && mes && (
-            new Date(userMes.time) >= new Date(mes.time) ? userMes : mes
-        );
+        if (userMes.time > lastSeenMessage.time) return userMes;
+        else {
+            return lastSeenMessage;
+        }
+        
     }
 };

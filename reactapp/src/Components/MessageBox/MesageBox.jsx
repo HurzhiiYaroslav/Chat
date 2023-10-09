@@ -74,23 +74,33 @@ function MesageBox({currentChat,chatData,connection,setCurrentChatId }) {
     });
 
     const GetLastSeenMes = () => {
-        const lastMessage = findLastMessage(currentChat);
+        let lastMessage = findLastMessage(currentChat);
+        if (!lastMessage && currentChat?.Messages) {
+            lastMessage = currentChat.Messages[currentChat.Messages.length - 1];
+        }
         return document.getElementById(lastMessage?.Id);
     };
+
+    const GetVisibleMessages = () => {
+        const scrollContainer = mesContainer.current;
+        if (!scrollContainer) return [];
+
+        const containerRect = scrollContainer.getBoundingClientRect();
+        const chatMessages = scrollContainer.querySelectorAll('.MessageItem');
+
+        return Array.from(chatMessages).filter((message) => {
+            const messageRect = message.getBoundingClientRect();
+            return (
+                messageRect.top >= containerRect.top &&
+                messageRect.bottom <= containerRect.bottom
+            );
+        });
+    }
 
     const handleScroll = () => {
         clearTimeout(scrollTimeout);
         scrollTimeout = setTimeout(() => {
-            const scrollContainer = mesContainer.current;
-            if (!scrollContainer) return;
-            const scrollPosition = scrollContainer.scrollTop + scrollContainer.clientHeight + 40;
-            if (GetLastSeenMes()?.offsetTop > scrollPosition) {
-                return;
-            }
-            const chatMessages = scrollContainer.querySelectorAll('.MessageItem');
-            const visibleMessages = Array.from(chatMessages).filter((message) => {
-                return message.offsetTop + message.clientHeight <= scrollPosition;
-            });
+            const visibleMessages = GetVisibleMessages();
             if (visibleMessages.length > 0) {
                 const lastVisibleMessage = visibleMessages[visibleMessages.length - 1];
                 const messageId = lastVisibleMessage.id;
@@ -111,7 +121,6 @@ function MesageBox({currentChat,chatData,connection,setCurrentChatId }) {
 
     useEffect(() => {
         const chatContainer = mesContainer.current;
-
         if (chatContainer) {
             chatContainer.addEventListener('scroll', handleScroll);
 
@@ -121,18 +130,18 @@ function MesageBox({currentChat,chatData,connection,setCurrentChatId }) {
         }
     }, [currentChat]);
 
-    useEffect(() => {
-        ScrollToLastSeenMes();
-    }, [currentChat?.Id]);
+
 
     useEffect(() => {
-        if (connection) {
+        ScrollToLastSeenMes();
+        if (currentChat?.Messages && connection) {
+            handleScroll();
             connection.on('ReceiveMessage', handleReceiveMessage);
             return () => {
                 connection.off('ReceiveMessage', handleReceiveMessage);
             };
         }
-    }, [currentChat?.Id]);
+    }, [currentChat?.Id, connection]);
     
   return (
       <div className="messageBox" ref={mesContainer}>

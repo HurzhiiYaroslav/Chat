@@ -82,12 +82,10 @@ namespace webapi.Hubs
 
         public async Task MarkAsSeen(string chatId,string mesId)
         {
-            Console.WriteLine("+++++++++++++++++++++++++++++++++++++++1");
             if(chatId==null|| mesId==null) return;
             var user = await GetCurrentUserAsync();
             var mes = await db.Messages.Include(m => m.Sender).FirstOrDefaultAsync(m => m.Id.ToString().ToLower()==mesId);
             var chat = await db.GetChatById(chatId);
-            Console.WriteLine("+++++++++++++++++++++++++++++++++++++++2");
             if (mes==null || mes.Sender == user || mes.IsSeen || !chat.Messages.Contains(mes)) return;
             
             mes.IsSeen = true;
@@ -108,7 +106,8 @@ namespace webapi.Hubs
             var notify = new JObject
             {
                 ["chatId"] = chatId,
-                ["notification"] = message
+                ["notification"] = message,
+                ["time"] = DateTime.Now,
             };
             await Clients.Group(chatId).SendAsync("notify", notify.ToString());
         }

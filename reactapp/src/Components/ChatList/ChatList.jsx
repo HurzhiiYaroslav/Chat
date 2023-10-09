@@ -1,7 +1,7 @@
 import React, { useState, useEffect,useMemo } from 'react';
 import {DialogCard,GroupCard,ChannelCard } from "../Cards/Cards"
 import { createDialod, joinChannel, searchChats } from '../../Utilities/signalrMethods';
-import { findLastMessage } from '../../Utilities/chatFunctions';
+import { findLastMessage, getCurrentUserRole } from '../../Utilities/chatFunctions';
 import "./ChatList.scss"
 
 function ChatList({ connection, chatData, onlineUsers, setCurrentChatId,currentChatId }) { 
@@ -75,12 +75,19 @@ function ChatList({ connection, chatData, onlineUsers, setCurrentChatId,currentC
                 const extraClass = `${item.Id === currentChatId ? 'active-chat' : ''}`;
                 let unreadCount = 0;
                 const unreadMes = findLastMessage(item);
-
-                if (unreadMes) {
-                    const unreadIndex = item.Messages.indexOf(unreadMes);
+                console.log(unreadMes)
+                if (unreadMes && item.Messages) {
+                    const unreadIndex = item.Messages.findIndex(m=>m.Id===unreadMes.Id);
+                    console.log(unreadIndex)
                     if (unreadIndex >= 0) {
                         unreadCount = item.Messages.length - unreadIndex - 1;
+                        console.log(unreadCount)
                     }
+                }
+                else {
+                    const curUser = localStorage.getItem("currentUser");
+                    unreadCount = item.Messages.filter(m => m.sender !== curUser && !m.notification).length;
+                    if (unreadCount > 0) unreadCount = "!";
                 }
 
                 if (item.Type === "Dialog") {
@@ -99,7 +106,7 @@ function ChatList({ connection, chatData, onlineUsers, setCurrentChatId,currentC
 
                 return chatCard;
             });
-    }, [chatData.chats, currentChatId, onlineUsers, connection]);
+    }, [chatData, currentChatId, onlineUsers, connection]);
 
     const foundUsersSection = useMemo(() => {
         return (

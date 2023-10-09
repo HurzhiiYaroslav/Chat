@@ -54,10 +54,13 @@ function MessageItem({ item, chatData, currentChat, connection, setCurrentChatId
     };
 
     const isSeen = (item) => {
+        if (!currentChat || !currentChat.LastSeenMessage || !item || !item.time) {
+            return false;
+        }
         const lastSeen = new Date(currentChat.LastSeenMessage.time);
         const itemTime = new Date(item.time);
-        return itemTime <=lastSeen
-    }
+        return itemTime <= lastSeen;
+    };
 
     useEffect(() => {
         const foundSender = currentChat?.Users?.find((element) => element.Id === item.sender);

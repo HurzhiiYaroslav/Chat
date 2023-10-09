@@ -54,6 +54,7 @@ function ChatMiddle({ connection, chatData, onlineUsers, currentChatId, setCurre
                 formData.append('Attachments', mesFiles[i]);
             }
             try {
+                if(currentChat?.Messages?.length>0) MarkAsSeen(connection, currentChat.Id, currentChat.Messages[currentChat.Messages.length - 1].Id);
                 await axios.post(SendMessageUrl, formData, { headers });
                 setMesFiles([]);
                 setMesText("");
