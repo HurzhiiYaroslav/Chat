@@ -31,7 +31,7 @@ namespace webapi.Controllers
                     return BadRequest(new ApiResponse { Success = false, Message = "Invalid input data." });
                 }
 
-                var user = await _db.Users.FirstOrDefaultAsync(p => p.Login == authRequest.Login);
+                var user = await _db.Clients.FirstOrDefaultAsync(p => p.Login == authRequest.Login);
                 if (user is null || !PasswordHasher.VerifyPassword(authRequest.Password, user.Password))
                 {
                     return Unauthorized(new ApiResponse { Success = false, Message = "Invalid login credentials." });
@@ -61,16 +61,20 @@ namespace webapi.Controllers
                     return BadRequest(new ApiResponse { Success = false, Message = "Invalid input data." });
                 }
 
-                if (await _db.Users.AnyAsync(p => p.Login == regRequest.Login))
+                if (await _db.Clients.AnyAsync(p => p.Login == regRequest.Login))
                 {
                     return Conflict(new ApiResponse { Success = false, Message = "User with this login already exists." });
                 }
+
+                string salt = PasswordHasher.GenerateSalt();
 
                 var user = new User
                 {
                     Name = regRequest.Username,
                     Login = regRequest.Login,
-                    Password = PasswordHasher.HashPassword(regRequest.Password)
+                    PasswordSalt = salt,
+                    Password = PasswordHasher.HashPassword(regRequest.Password, salt)
+                    
                 };
 
                 if (regRequest.Image != null && regRequest.Image.Length > 0)
@@ -85,7 +89,7 @@ namespace webapi.Controllers
                     user.Photo = fileName;
                 }
 
-                await _db.Users.AddAsync(user);
+                await _db.Clients.AddAsync(user);
                 await _db.SaveChangesAsync();
 
                 var response = new AuthResponseDto

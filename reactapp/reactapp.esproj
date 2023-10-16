@@ -25,5 +25,6 @@
     <Folder Include="src\Components\GroupHeader\" />
     <Folder Include="src\Components\AboutSection\" />
     <Folder Include="src\Components\MessageBox\" />
+    <Folder Include="src\Components\ChatInput\" />
   </ItemGroup>
 </Project>

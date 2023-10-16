@@ -14,6 +14,7 @@ using webapi.Utilities;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using Newtonsoft.Json;
+using System.Threading;
 
 namespace webapi.Controllers
 {
@@ -138,7 +139,8 @@ namespace webapi.Controllers
                 {
                     if (PasswordHasher.VerifyPassword(profileDto.OldPassword, user.Password))
                     {
-                        user.Password = PasswordHasher.HashPassword(profileDto.NewPassword);
+                        user.PasswordSalt = PasswordHasher.GenerateSalt();
+                        user.Password = PasswordHasher.HashPassword(profileDto.NewPassword, user.PasswordSalt);
                     }
                     else
                     {

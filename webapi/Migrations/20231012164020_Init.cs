@@ -6,28 +6,29 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace webapi.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Users",
+                name: "Clients",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Login = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PasswordSalt = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Photo = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Users", x => x.Id);
+                    table.PrimaryKey("PK_Clients", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Chat",
+                name: "Chats",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -43,33 +44,33 @@ namespace webapi.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Chat", x => x.Id);
+                    table.PrimaryKey("PK_Chats", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Chat_Users_Dialog_UserId",
+                        name: "FK_Chats_Clients_Dialog_UserId",
                         column: x => x.Dialog_UserId,
-                        principalTable: "Users",
+                        principalTable: "Clients",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Chat_Users_User1Id",
+                        name: "FK_Chats_Clients_User1Id",
                         column: x => x.User1Id,
-                        principalTable: "Users",
+                        principalTable: "Clients",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Chat_Users_User2Id",
+                        name: "FK_Chats_Clients_User2Id",
                         column: x => x.User2Id,
-                        principalTable: "Users",
+                        principalTable: "Clients",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Chat_Users_UserId",
+                        name: "FK_Chats_Clients_UserId",
                         column: x => x.UserId,
-                        principalTable: "Users",
+                        principalTable: "Clients",
                         principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
-                name: "Enrollments",
+                name: "Enrollment",
                 columns: table => new
                 {
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -79,17 +80,17 @@ namespace webapi.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Enrollments", x => new { x.UserId, x.GroupId });
+                    table.PrimaryKey("PK_Enrollment", x => new { x.GroupId, x.UserId });
                     table.ForeignKey(
-                        name: "FK_Enrollments_Chat_GroupId",
+                        name: "FK_Enrollment_Chats_GroupId",
                         column: x => x.GroupId,
-                        principalTable: "Chat",
+                        principalTable: "Chats",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Enrollments_Users_UserId",
+                        name: "FK_Enrollment_Clients_UserId",
                         column: x => x.UserId,
-                        principalTable: "Users",
+                        principalTable: "Clients",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -109,20 +110,20 @@ namespace webapi.Migrations
                 {
                     table.PrimaryKey("PK_Messages", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Messages_Chat_ChatId",
+                        name: "FK_Messages_Chats_ChatId",
                         column: x => x.ChatId,
-                        principalTable: "Chat",
+                        principalTable: "Chats",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Messages_Users_SenderId",
+                        name: "FK_Messages_Clients_SenderId",
                         column: x => x.SenderId,
-                        principalTable: "Users",
+                        principalTable: "Clients",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "FileEntity",
+                name: "FileEntities",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -133,42 +134,42 @@ namespace webapi.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_FileEntity", x => x.Id);
+                    table.PrimaryKey("PK_FileEntities", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_FileEntity_Messages_MessageId",
+                        name: "FK_FileEntities_Messages_MessageId",
                         column: x => x.MessageId,
                         principalTable: "Messages",
                         principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Chat_Dialog_UserId",
-                table: "Chat",
+                name: "IX_Chats_Dialog_UserId",
+                table: "Chats",
                 column: "Dialog_UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Chat_User1Id",
-                table: "Chat",
+                name: "IX_Chats_User1Id",
+                table: "Chats",
                 column: "User1Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Chat_User2Id",
-                table: "Chat",
+                name: "IX_Chats_User2Id",
+                table: "Chats",
                 column: "User2Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Chat_UserId",
-                table: "Chat",
+                name: "IX_Chats_UserId",
+                table: "Chats",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Enrollments_GroupId",
-                table: "Enrollments",
-                column: "GroupId");
+                name: "IX_Enrollment_UserId",
+                table: "Enrollment",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_FileEntity_MessageId",
-                table: "FileEntity",
+                name: "IX_FileEntities_MessageId",
+                table: "FileEntities",
                 column: "MessageId");
 
             migrationBuilder.CreateIndex(
@@ -186,19 +187,19 @@ namespace webapi.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Enrollments");
+                name: "Enrollment");
 
             migrationBuilder.DropTable(
-                name: "FileEntity");
+                name: "FileEntities");
 
             migrationBuilder.DropTable(
                 name: "Messages");
 
             migrationBuilder.DropTable(
-                name: "Chat");
+                name: "Chats");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "Clients");
         }
     }
 }

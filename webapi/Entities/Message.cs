@@ -1,5 +1,8 @@
-﻿namespace webapi.Entities
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace webapi.Entities
 {
+    [Table("Messages")]
     public class Message
     {
         public Guid Id { get; set; } = Guid.NewGuid();
@@ -10,6 +13,7 @@
         public required User Sender { get; set; }
     }
 
+    [Table("FileEntities")]
     public class FileEntity
     {
         public Guid Id { get; set; } = Guid.NewGuid();

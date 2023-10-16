@@ -6,7 +6,7 @@ namespace webapi
 {
     public class ApplicationContext : DbContext
     {
-        public DbSet<User> Users { get; set; } = null!;
+        public DbSet<User> Clients { get; set; } = null!;
         public DbSet<Dialog> Dialogs { get; set; } = null!;
         public DbSet<Group> Groups { get; set; } = null!;
         public DbSet<Message> Messages { get; set; } = null!;
@@ -15,11 +15,12 @@ namespace webapi
             : base(options)
         {
             //Database.EnsureDeleted();
-            Database.EnsureCreated();
+            //await Database.MigrateAsync();
+            //Database.EnsureCreated();
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
+            
             modelBuilder.Entity<User>()
                 .HasKey(u => u.Id);
 
@@ -62,16 +63,12 @@ namespace webapi
             .HasOne(e => e.Group)
             .WithMany(g=>g.Enrollments)
             .HasForeignKey(e => e.GroupId)
-            .OnDelete(DeleteBehavior.Restrict),
-            j =>
-            {
-                j.HasKey(t => new { t.UserId, t.GroupId });
-                j.ToTable("Enrollments");
-            });
+            .OnDelete(DeleteBehavior.Restrict));
 
             modelBuilder.Entity<Channel>()
                 .HasBaseType<Group>();
 
+            base.OnModelCreating(modelBuilder);
         }
         public async Task<Chat> GetChatById(string Id)
         {

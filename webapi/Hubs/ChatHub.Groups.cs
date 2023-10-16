@@ -13,7 +13,7 @@ namespace webapi.Hubs
         {
             
             var user = await GetCurrentUserAsync();
-            var invited = await db.Users.FirstOrDefaultAsync(u => u.Id.ToString() == invitedUserId.ToUpper());
+            var invited = await db.Clients.FirstOrDefaultAsync(u => u.Id.ToString() == invitedUserId.ToUpper());
             var room = await db.GetChatById(roomId);
             
             if (invited != null && room != null)
@@ -73,7 +73,7 @@ namespace webapi.Hubs
         {
             var user = await GetCurrentUserAsync();
             var chat = await db.GetChatById(chatId);
-            var exile = await db.Users.Include(u => u.Groups).FirstOrDefaultAsync(u => u.Id.ToString() == exileId.ToUpper());
+            var exile = await db.Clients.Include(u => u.Groups).FirstOrDefaultAsync(u => u.Id.ToString() == exileId.ToUpper());
             Group group = (Group)chat;
             var userEnrollment = group.GetEnrollmentByUser(user);
             if (group.Users.Contains(exile))

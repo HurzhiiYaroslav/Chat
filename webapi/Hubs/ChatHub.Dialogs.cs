@@ -9,7 +9,7 @@ namespace webapi.Hubs
         public async Task CreateDialog(string companionId)
         {
             var user = await GetCurrentUserAsync();
-            var companion = await db.Users.FirstOrDefaultAsync(u => u.Id.ToString() == companionId.ToUpper());
+            var companion = await db.Clients.FirstOrDefaultAsync(u => u.Id.ToString() == companionId.ToUpper());
 
             if (companion == null)
             {

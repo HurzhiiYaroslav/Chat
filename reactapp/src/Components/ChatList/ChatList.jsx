@@ -75,13 +75,10 @@ function ChatList({ connection, chatData, onlineUsers, setCurrentChatId,currentC
                 const extraClass = `${item.Id === currentChatId ? 'active-chat' : ''}`;
                 let unreadCount = 0;
                 const unreadMes = findLastMessage(item);
-                console.log(unreadMes)
                 if (unreadMes && item.Messages) {
                     const unreadIndex = item.Messages.findIndex(m=>m.Id===unreadMes.Id);
-                    console.log(unreadIndex)
                     if (unreadIndex >= 0) {
                         unreadCount = item.Messages.length - unreadIndex - 1;
-                        console.log(unreadCount)
                     }
                 }
                 else {

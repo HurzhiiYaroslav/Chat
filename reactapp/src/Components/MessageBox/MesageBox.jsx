@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect, useMemo } from 'react';
 import MessageItem from '../MessageItem/MessageItem';
 import { MarkAsSeen } from "../../Utilities/signalrMethods" 
 import { findLastMessage } from '../../Utilities/chatFunctions';
+import "./MessageBox.scss"
 function MesageBox({currentChat,chatData,connection,setCurrentChatId }) {
     let scrollTimeout;
     const mesContainer = useRef(null);
@@ -58,7 +59,7 @@ function MesageBox({currentChat,chatData,connection,setCurrentChatId }) {
                     });
                 }
             }
-        }, 1);
+        }, 5);
 
         return () => {
             clearTimeout(timeoutId);

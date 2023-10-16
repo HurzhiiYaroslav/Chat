@@ -38,9 +38,9 @@
     display: flex;
     position: relative;
     flex-direction: column;
-    gap: 10px;
+    gap: 5px;
     overflow-y: auto;
-    height: 64vh;
+    height: -webkit-fill-available;
 
     .fileItem {
         padding: 8px;
@@ -59,6 +59,7 @@
     .membersSection {
         display: flex;
         flex-direction: column;
+        max-height: 66%;
     }
 }
 

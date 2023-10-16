@@ -32,7 +32,7 @@ function MessageItem({ item, chatData, currentChat, connection, setCurrentChatId
                         className="Image"
                         src={image}
                         alt="AttachedImage"
-                        loading="lazy"
+                        //loading="lazy"
                     />
                 </div>
             );

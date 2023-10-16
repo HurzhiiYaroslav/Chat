@@ -142,9 +142,8 @@ function AboutSection({ chatData, currentChat, connection, userRole, onlineUsers
                     text={`to kick "${userToKick.Name}" `}
                 />
             )}
-            <div className="aboutButtonsTop">
                 {currentChat && currentChat.Type !== "Dialog" && (
-                    <>
+                <div className="aboutButtonsTop">
                         <button className={aboutSection === "Files" ? "active" : ""} onClick={() => setAboutSection("Files")}>
                             Files
                         </button>
@@ -156,10 +155,8 @@ function AboutSection({ chatData, currentChat, connection, userRole, onlineUsers
                                 Manage
                             </button>
                         )}
-                    </>
+                </div>
                 )}
-            </div>
-
             {chatData && currentChat && (
                 <div className="aboutContent">
                     {aboutSection === "Files" ? (

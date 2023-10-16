@@ -41,7 +41,7 @@ namespace webapi.Utilities
         {
             try
             {
-                var foundUsers = db.Users
+                var foundUsers = db.Clients
                     .Where(u => u.Name.Contains(userInput) && u != user)
                     .ToList();
 

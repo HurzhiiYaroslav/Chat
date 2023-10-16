@@ -34,7 +34,7 @@ namespace webapi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Chat");
+                    b.ToTable("Chats");
 
                     b.HasDiscriminator<string>("Discriminator").HasValue("Chat");
 
@@ -43,10 +43,10 @@ namespace webapi.Migrations
 
             modelBuilder.Entity("webapi.Entities.Enrollment", b =>
                 {
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid>("GroupId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("GroupId")
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("LastSeenMes")
@@ -55,11 +55,11 @@ namespace webapi.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("int");
 
-                    b.HasKey("UserId", "GroupId");
+                    b.HasKey("GroupId", "UserId");
 
-                    b.HasIndex("GroupId");
+                    b.HasIndex("UserId");
 
-                    b.ToTable("Enrollments", (string)null);
+                    b.ToTable("Enrollment");
                 });
 
             modelBuilder.Entity("webapi.Entities.FileEntity", b =>
@@ -87,7 +87,7 @@ namespace webapi.Migrations
 
                     b.HasIndex("MessageId");
 
-                    b.ToTable("FileEntity");
+                    b.ToTable("FileEntities");
                 });
 
             modelBuilder.Entity("webapi.Entities.Message", b =>
@@ -138,13 +138,17 @@ namespace webapi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("PasswordSalt")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Photo")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Clients");
                 });
 
             modelBuilder.Entity("webapi.Entities.Dialog", b =>
@@ -166,7 +170,7 @@ namespace webapi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Chat", t =>
+                    b.ToTable("Chats", t =>
                         {
                             t.Property("UserId")
                                 .HasColumnName("Dialog_UserId");
@@ -191,6 +195,8 @@ namespace webapi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.ToTable("Chats");
+
                     b.HasDiscriminator().HasValue("Group");
                 });
 
@@ -205,6 +211,8 @@ namespace webapi.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasIndex("UserId");
+
+                    b.ToTable("Chats");
 
                     b.HasDiscriminator().HasValue("Channel");
                 });

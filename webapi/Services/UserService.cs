@@ -16,7 +16,7 @@ namespace webapi.Services
         public async Task<User> GetUserFromToken(string token)
         {
             JWTCreator.DecodeToken(token, out string login);
-            return await _db.Users.FirstOrDefaultAsync(u => u.Login == login);
+            return await _db.Clients.FirstOrDefaultAsync(u => u.Login == login);
         }
     }
 }

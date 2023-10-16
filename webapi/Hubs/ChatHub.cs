@@ -40,7 +40,7 @@ namespace webapi.Hubs
             await Clients.Others.SendAsync("UserConnected", userId);
             //await Test();
 
-            var user = await db.Users.FirstOrDefaultAsync(u => u.Id.ToString().ToUpper() == userId.ToString().ToUpper());
+            var user = await db.Clients.FirstOrDefaultAsync(u => u.Id.ToString().ToUpper() == userId.ToString().ToUpper());
 
             if (user is not null)
             {
@@ -64,7 +64,7 @@ namespace webapi.Hubs
         public async Task<User> GetCurrentUserAsync()
         {
             var userId = connectedUsers[Context.ConnectionId];
-            return await db.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userId.ToUpper());
+            return await db.Clients.FirstOrDefaultAsync(u => u.Id.ToString() == userId.ToUpper());
         }
 
         public async Task AddUserToGroups(string userId, List<Chat> chats)
@@ -76,7 +76,7 @@ namespace webapi.Hubs
         public async Task<string> SearchChats(string userInput)
         {
             var username = connectedUsers[Context.ConnectionId];
-            var user = await db.Users.Include(u => u.Dialogs).Include(u=>u.Channels).FirstOrDefaultAsync(u => u.Id.ToString().ToUpper() == username.ToString().ToUpper());
+            var user = await db.Clients.Include(u => u.Dialogs).Include(u=>u.Channels).FirstOrDefaultAsync(u => u.Id.ToString().ToUpper() == username.ToString().ToUpper());
             return JSONConvertor.ConvertUserSearchToJson(user, userInput, db);
         }
 

@@ -48,7 +48,7 @@ namespace webapi.Hubs
         {
             var user = await GetCurrentUserAsync();
             var group = await db.Groups.Include(c => c.Enrollments).FirstOrDefaultAsync(c => c.Id.ToString() == groupId.ToUpper());
-            var special = await db.Users.Include(u => u.Groups).FirstOrDefaultAsync(u => u.Id.ToString() == specialId.ToUpper());
+            var special = await db.Clients.Include(u => u.Groups).FirstOrDefaultAsync(u => u.Id.ToString() == specialId.ToUpper());
 
             return (user, group, special);
         }
