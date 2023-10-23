@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import EditGroupModal from "../Modals/EditGroupModal/EditGroupModal"
 import { MediaUrl } from "../../Links"
 import "./GroupHeader.scss"
+import EditOverlay from '../EditOverlay/EditOverlay';
 function GroupHeader({currentChat, userRole }) {
     const [editGroupModal, setEditGroupModal] = useState(false);
 
@@ -13,6 +14,7 @@ function GroupHeader({currentChat, userRole }) {
         <>
             <EditGroupModal open={editGroupModal} close={handleEditGroupModal} chatId={currentChat.Id} />
             <div className="aboutLogoWrapper">
+                {currentChat && userRole === "Owner" ? (<EditOverlay func={handleEditGroupModal } />) : null}
                 {(
                     currentChat.Logo.startsWith('#') ? (
                         <div
@@ -25,7 +27,6 @@ function GroupHeader({currentChat, userRole }) {
                     )
                 )}
                 <div className="aboutTitle">{currentChat.Title}</div>
-                {currentChat && userRole === "Owner" ? (<button onClick={handleEditGroupModal} >Edit</button>) : (<></>)}
             </div>
             <div className="aboutDescription">{currentChat.Description}</div>
         </>

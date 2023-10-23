@@ -2,7 +2,6 @@ import React, {useState} from 'react';
 import axios from 'axios';
 import Modal from "../../General/Modal/Modal"
 import { EditProfileUrl } from "../../../Links"
-import "./EditProfileModal.scss"
 
 function EditProfileModal({open,close }) {
     const [photoFile, setPhotoFile] = useState(null);
@@ -71,27 +70,23 @@ function EditProfileModal({open,close }) {
     };
 
   return (
-      <Modal closeModal={close} open={open} additionalClass="edit">
-          <div className="editModalWrapper">
-              <>
-                  {error ? (<p className="modalError">{error}</p>) : (null)}
-                  <p>New name:</p>
-                  <input type="text" value={newName} onChange={handleNameChange} />
+      <Modal closeModal={close} open={open} additionalClass="edit-profile">
+          <>
+              {error ? (<p className="modalError">{error}</p>) : (null)}
+              <label htmlFor="username">New name:</label>
+              <input type="text" name="username" value={newName} onChange={handleNameChange} autocomplete="off" />
 
-                  <p>New photo:</p>
-                  <input type="file" accept="image/*" onChange={handlePhotoChange} />
+              <label htmlFor="image">New image:</label>
+              <input type="file" name="image" accept="image/*" onChange={handlePhotoChange} />
 
-                  <p>Old password:</p>
-                  <input type="password" value={oldPassword} onChange={handleOldPasswordChange} />
+              <label htmlFor="oldPass">Old password:</label>
+              <input type="password" name="oldPass" value={oldPassword} onChange={handleOldPasswordChange} autocomplete="off" />
 
-                  <p>New password:</p>
-                  <input type="password" value={newPassword} onChange={handleNewPasswordChange} />
+              <label htmlFor="NewPass">New password:</label>
+              <input type="password" name="NewPass" value={newPassword} onChange={handleNewPasswordChange} autocomplete="off" />
 
-                  <button onClick={handleSave}>Save</button>
-                  <button onClick={close}>Close</button>
-
-              </>
-          </div>
+              <button className="saveBtn" onClick={handleSave}>Save</button>
+          </>
       </Modal>
   );
 }

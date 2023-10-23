@@ -12,7 +12,7 @@
 webapi/wwwroot/Avatars/*
 webapi/wwwroot/Media/*
 !webapi/wwwroot/Avatars/default.jpg
-webapi/wwwroot/Migrations/*
+webapi/Migrations/*
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

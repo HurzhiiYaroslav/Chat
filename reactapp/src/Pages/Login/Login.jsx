@@ -49,10 +49,10 @@ function LoginPage() {
             {loading && <Loading />}
             <form id="loginform" onSubmit={handleSubmit}>
                 <div>
-                    <label htmlFor="username">Login:</label>
+                    <label htmlFor="login">Login:</label>
                     <input
                         type="text"
-                        id="username"
+                        id="login"
                         value={username}
                         onChange={handleUsernameChange}
                     />

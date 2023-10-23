@@ -1,74 +1,54 @@
-
 .newChatModalWrapper {
-    background-color: #fff;
-    padding: 15px;
-    border-radius: 5px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-    width: 400px;
-}
+    
+    .chatTypeBtns {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
 
-.newChatModalWrapper p {
-    font-size: 16px;
-    font-weight: bold;
-    margin-bottom: 5px;
-}
+        .chatTypeBtn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
 
-.newChatModalWrapper input {
-    width: 95%;
-    padding: 8px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
+            &.active {
+                background-color: #00cc00;
+                color: #fff;
+            }
+        }
+        }
+        .buttonGroup {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
 
-.newChatModalWrapper .chatTypeBtns {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 10px;
-}
+            .createBtn,
+            .closeBtn {
+                padding: 10px 20px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 16px;
 
-.newChatModalWrapper .chatTypeBtn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-}
+                &.createBtn {
+                    background-color: #007bff;
+                    color: #fff;
 
-.newChatModalWrapper .chatTypeBtn.active {
-    background-color: #00cc00;
-    color: #fff;
-}
+                    &:hover {
+                        background-color: #0056b3;
+                    }
+                }
 
-.newChatModalWrapper .buttonGroup {
-    display: flex;
-    gap: 10px;
-    justify-content: center
-}
+                &.closeBtn {
+                    background-color: #dc3545;
+                    color: #fff;
 
-.newChatModalWrapper button.createBtn,
-.newChatModalWrapper button.closeBtn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-}
+                    &:hover {
+                        background-color: #b3000f;
+                    }
+                }
+            }
+        }
+    }
 
-.newChatModalWrapper button.createBtn {
-    background-color: #007bff;
-    color: #fff;
-}
-
-.newChatModalWrapper button.createBtn:hover {
-    background-color: #0056b3;
-}
-
-.newChatModalWrapper button.closeBtn {
-    background-color: #dc3545;
-    color: #fff;
-}
-
-.newChatModalWrapper button.closeBtn:hover {
-    background-color: #b3000f;
-}

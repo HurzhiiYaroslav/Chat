@@ -5,6 +5,7 @@ import DoYouWantModal from "../../Components//Modals/DoYouWantModal/DoYouWantMod
 import CreateChatModal from "../../Components//Modals/CreateChatModal/CreateChatModal";
 import EditProfileModal from "../../Components//Modals/EditProfileModal/EditProfileModal";
 import "./ChatLeft.scss"
+import EditOverlay from '../../Components/EditOverlay/EditOverlay';
 
 function ChatLeft({ connection, chatData, setChatData, onlineUsers, currentChatId, setCurrentChatId, navigate }) {
     const [logoutModal, setLogoutModal] = useState(false);
@@ -47,19 +48,15 @@ function ChatLeft({ connection, chatData, setChatData, onlineUsers, currentChatI
             <div className="leftSide">
                 <div className="ButtonsWrapper">
                     <button className="logoutButton" onClick={() => { handleLogoutModal() }}>Logout</button>
-                    <button className="editButton" onClick={() => { handleEditModal() }}>Edit</button>
                 </div>
                 <div className="UserInfo">
                     <div className="UserPhotoWrapper">
-                        {chatData && chatData.user && chatData.user.Photo ? (
-                            <img
-                                className="UserPhoto"
-                                src={AvatarUrl + chatData.user.Photo}
-                                alt="YourAvatar"
-                            />
-                        ) : (
-                            <div className="DefaultPhoto">photo</div>
-                        )}
+                        <EditOverlay func={handleEditModal } />
+                        <img
+                            className="UserPhoto"
+                            src={AvatarUrl + (chatData?.user?.Photo || "default")}
+                            alt="YourAvatar"
+                        />
                     </div>
                     <div className="UserName">
                         { chatData.user.Name ? chatData.user.Name : "name"}

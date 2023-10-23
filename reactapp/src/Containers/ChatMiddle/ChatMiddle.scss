@@ -1,17 +1,14 @@
 .chatMiddle {
     width: 78%;
     height: 100vh;
-    float: right;
+    //float: right;
     display: flex;
     flex-direction: row;
-
+    width:100%;
     .MessagesWrapper {
         flex: 1;
         display: flex;
         flex-direction: column;
+        justify-content: space-between;
     }
-
-    
-
-    
 }

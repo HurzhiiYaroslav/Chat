@@ -1,10 +1,11 @@
 .messageBox {
-    flex: 1;
-    height: 80%;
+    //flex: 1;
+    //height: 80%;
     padding: 10px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+    overscroll-behavior: none;
 
     .date-header {
         background-color: #f2f2f2;

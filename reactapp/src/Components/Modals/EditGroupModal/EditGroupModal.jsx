@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import Modal from "../../General/Modal/Modal"
 import { EditGroupUrl } from "../../../Links"
-import "./EditGroupModal.scss"
+
 function EditGroupModal({ open,close,chatId}) {
     const [newTitle, setNewTitle] = useState("");
     const [newDescription, setNewDescription] = useState("");
@@ -47,7 +47,7 @@ function EditGroupModal({ open,close,chatId}) {
           <input type="text" id="description" value={newDescription} onChange={(e) => setNewDescription(e.target.value)} />
           <label htmlFor="image">Image:</label>
           <input type="file" id="image" accept="image/*" onChange={(e) => setNewImage(e.target.files[0])} />
-          <button onClick={handleEditGroup}>Save</button>
+          <button className="saveBtn" onClick={handleEditGroup}>Save</button>
       </Modal>
   );
 }

@@ -13,7 +13,7 @@
     .specialsSection {
         height: 100%;
         border: 1px solid grey;
-        padding: 20px;
+        padding: 1vh;
         width: 80%;
         margin-bottom: 5px;
         border-radius: 5px;
@@ -24,7 +24,7 @@
     button {
         border: 1px solid grey;
         border-radius: 5px;
-        padding: 5px 10px;
+        padding: 0.5vh 1vh;
         cursor: pointer;
         transition: background-color 0.3s ease;
 
@@ -36,11 +36,11 @@
 
 .aboutContent {
     display: flex;
-    position: relative;
     flex-direction: column;
     gap: 5px;
     overflow-y: auto;
-    height: -webkit-fill-available;
+    overflow-x:hidden;
+    max-height: -webkit-fill-available;
 
     .fileItem {
         padding: 8px;
@@ -61,19 +61,51 @@
         flex-direction: column;
         max-height: 66%;
     }
+
+    .managePublicity {
+        display: flex;
+        align-items: baseline;
+        margin-bottom: 2vh;
+
+        .publicityStatus {
+            font-weight: bold;
+            margin-right: 0.5vw;
+        }
+
+        .Public {
+            color: green;
+        }
+
+        .non-Public {
+            color: red;
+        }
+
+        .changePublicityBtn {
+            border-radius: 5px;
+            border: 1px solid grey;
+            padding: 0.5vh 1vh;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+
+            &:hover {
+                background-color: #0056b3;
+            }
+        }
+    }
 }
 
 .aboutButtonsTop {
     display: flex;
     justify-content: space-around;
     gap: 8px;
-    margin-bottom: 16px;
+    margin-bottom: 1.5vh;
+    flex-wrap: wrap;
 
     button {
-        padding: 8px 16px;
+        padding: 0.7vh 1.5vh;
         border: none;
         border-radius: 4px;
-        font-size: 16px;
+        font-size: 2vh;
         cursor: pointer;
         transition: background-color 0.2s ease;
 

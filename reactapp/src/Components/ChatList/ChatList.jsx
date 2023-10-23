@@ -75,18 +75,18 @@ function ChatList({ connection, chatData, onlineUsers, setCurrentChatId,currentC
                 const extraClass = `${item.Id === currentChatId ? 'active-chat' : ''}`;
                 let unreadCount = 0;
                 const unreadMes = findLastMessage(item);
+                const onlyMessages = item.Messages.filter(m => !m.notification);
                 if (unreadMes && item.Messages) {
                     const unreadIndex = item.Messages.findIndex(m=>m.Id===unreadMes.Id);
                     if (unreadIndex >= 0) {
-                        unreadCount = item.Messages.length - unreadIndex - 1;
+                        unreadCount = onlyMessages.length - unreadIndex - 1;
                     }
                 }
                 else {
                     const curUser = localStorage.getItem("currentUser");
-                    unreadCount = item.Messages.filter(m => m.sender !== curUser && !m.notification).length;
+                    unreadCount = onlyMessages.filter(m => m.sender !== curUser).length;
                     if (unreadCount > 0) unreadCount = "!";
                 }
-
                 if (item.Type === "Dialog") {
                     chatCard = <DialogCard key={item.Id} item={item} onlineUsers={onlineUsers} func={setCurrentChatId} connection={connection} extraClasses={extraClass} >
                         {unreadCount > 0 && (<div className="unread-count">{unreadCount}</div>) }

@@ -1,7 +1,7 @@
 .Item {
-    position:relative;
+    position: relative;
     display: flex;
-    padding: 10px;
+    padding: 0.8vh;
     border-radius: 8px;
     border: 1px solid dimgray;
     cursor: pointer;
@@ -10,10 +10,10 @@
     flex-wrap: wrap;
 
     .Logo {
-        width: 100%;
-        height: 100%;
         border-radius: 50%;
-        margin-right: 10px;
+        width: 4vh;
+        height: 4vh;
+        margin: 0;
     }
 
     .unread-count {
@@ -23,10 +23,10 @@
         border-radius: 50%;
         margin: auto 0;
         margin-left: auto;
-        width: 20px;
-        height: 20px;
+        width: 2vh;
+        height: 2vh;
         text-align: center;
-        line-height: 20px;
+        line-height: 2vh;
     }
 
     &:hover {
@@ -42,28 +42,21 @@
     @extend .Item;
     background-color: #f5f5f5;
 
-    .Logo {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        margin-right: 10px;
-    }
-
     .GroupInfo {
         margin: 0 10px;
 
         .GroupTitle {
-            font-size: 18px;
+            font-size: 2vh;
             font-weight: bold;
             margin: 0px;
             overflow: hidden;
             max-width: 13vw;
             word-wrap: break-word;
-            max-height: 7vh;
+            max-height: 10vh;
         }
 
         .GroupMembers {
-            font-size: 14px;
+            font-size: 1.5vh;
             color: darkgray;
         }
     }
@@ -74,16 +67,15 @@
     background-color: #f2f2f2;
 
     .PhotoBox {
+        //@extend .Logo;
         position: relative;
-        margin-right: 10px;
-        width: 40px;
-        height: 40px;
+        margin-right: 0.5vw;
     }
 
     .CompanionName {
-        font-size: 16px;
+        font-size: 2vh;
         font-weight: bold;
-        max-width: 170px;
+        max-width: 9vw;
         overflow-wrap: break-word;
         margin: auto 0;
     }
@@ -92,8 +84,8 @@
         position: absolute;
         bottom: 1px;
         right: 0.1vw;
-        width: 10px;
-        height: 10px;
+        width: 1vh;
+        height: 1vh;
         border-radius: 50%;
     }
 

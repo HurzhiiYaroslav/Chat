@@ -1,15 +1,14 @@
 .aboutLogoWrapper {
     display: flex;
-    min-width: 220px;
-    height: 200px;
+    height: 20vh;
     align-items: center;
     position: relative;
     overflow: hidden;
+    border-radius: 10px;
 
     .aboutLogo {
         width: 100%;
         height: 100%;
-        border-radius: 10px;
         position: absolute;
     }
 
@@ -19,25 +18,8 @@
         object-fit: cover;
     }
 
-    button {
-        position: absolute;
-        top: 5px;
-        right: -50px;
-        transition: right 0.3s ease;
-        padding: 2px 5px;
-        border-radius: 5px;
-        border: 1px solid dimGrey;
-        font-size: 16px;
-    }
-
-    &:hover {
-        button {
-            right: 5px;
-        }
-    }
-
     .aboutTitle {
-        font-size: 20px;
+        font-size: 2vh;
         font-weight: bold;
         text-shadow: 0 0 2px black;
         color: antiquewhite;
@@ -53,9 +35,9 @@
 }
 
 .aboutDescription {
-    font-size: 16px;
-    padding: 10px;
+    font-size: 1.5vh;
+    padding: 1vh;
     color: #333;
-    margin-bottom: 10px;
+    margin-bottom: 1vh;
     word-break: break-word;
 }

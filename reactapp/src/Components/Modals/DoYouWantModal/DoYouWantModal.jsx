@@ -8,8 +8,10 @@ function DoYouWantModal({ closeModal, open, action, text }) {
       <Modal closeModal={closeModal} open={open} additionalClass="leave">
           <div className="DoYouWantModalWrapper">
               <p>Do you want {text} ? </p>
-              <button className="yesButton" onClick={() => action()}>Yes</button>
-              <button className="noButton" onClick={() => closeModal()}>No</button>
+              <div className="yesNoBtns">
+                    <button className="yesButton" onClick={() => action()}>Yes</button>
+                    <button className="noButton" onClick={() => closeModal()}>No</button>
+              </div>
           </div>
       </Modal>
   );

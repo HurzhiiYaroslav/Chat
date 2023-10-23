@@ -1,9 +1,10 @@
 .modal-wrapper {
-    position: absolute;
-    width: 100vw;
-    height: 100vh;
+    position: fixed;
+    width: auto;
+    height: auto;
     left: 0;
     top: 0;
+    z-index: 2;
 
     .modal {
         width: auto;
@@ -24,7 +25,7 @@
                 animation: fade-out ease 0.3s;
                 position: absolute;
                 right: 1vw;
-                top: 0vw;
+                top: 0.5vw;
                 cursor: pointer;
 
                 svg {
@@ -37,6 +38,40 @@
         .modal-container {
             padding: 2vw 1vw;
         }
+
+        p {
+            font-size: 1.5vh;
+            margin-bottom: 2vh;
+            margin:5px;
+            font-weight:bold;
+        }
+
+        input,
+        button {
+            width: -webkit-fill-available;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .saveBtn {
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .saveBtn:hover {
+            background-color: #0056b3;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
     }
 }
 
@@ -48,7 +83,7 @@
     top: 0;
     left: 0;
     background-color: rgba(0, 0, 0, 0.5);
-    z-index:1;
+    z-index:2;
 }
 
 @keyframes show-modal {
@@ -68,3 +103,5 @@
         transform: translate(-50%, -50%) scale(1);
     }
 }
+
+
