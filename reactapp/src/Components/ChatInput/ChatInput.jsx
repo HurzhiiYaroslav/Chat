@@ -11,6 +11,7 @@ function ChatInput({ currentChat, connection }) {
     const [modal, setModal] = useState(false);
     const [error, setError] = useState(null);
     const [source, setSource] = useState(null);
+    const [uploadProgress, setUploadProgress] = useState(null);
 
     const handleDrop = (event) => {
         const files = event.dataTransfer.files;
@@ -35,7 +36,7 @@ function ChatInput({ currentChat, connection }) {
             return;
         }
         const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-        setError(`Upload progress: ${percentCompleted}%`);
+        setUploadProgress(`Upload progress: ${percentCompleted}%`);
     };
 
     async function SendMessage() {
@@ -56,6 +57,8 @@ function ChatInput({ currentChat, connection }) {
             axios.post(SendMessageUrl, formData, {
                 onUploadProgress: onUploadProgress,
                 cancelToken: source.token,
+                maxContentLength: Infinity,
+                maxBodyLength: Infinity,
                 headers
             })
                 .then(() => {
@@ -65,9 +68,10 @@ function ChatInput({ currentChat, connection }) {
                 })
                 .catch((error) => {
                     if (axios.isCancel(error)) {
-                        setError(null);
+                        setUploadProgress(null);
+                        setSource(axios.CancelToken.source());
                     } else {
-                        setError(error);
+                        console.log(error);
                     }
                 });
         }
@@ -79,6 +83,21 @@ function ChatInput({ currentChat, connection }) {
             setError(null);
         }
     }, [])
+
+    useEffect(() => {
+        if (mesFiles?.length > 0) {
+            const totalSize = mesFiles.reduce((total, item) => total + item.size, 0);
+            if (totalSize > 100000000) {
+                setError("Files are too large. Limit - 100mb");
+                return;
+            }
+            if (mesFiles?.length > 10) {
+                setError("Too many files. Limit - 10");
+                return;
+            }
+        }
+        setError(null)
+    }, [mesFiles])
 
     useEffect(() => {
         if (error) {
@@ -101,14 +120,15 @@ function ChatInput({ currentChat, connection }) {
 
             <div className="inputWrapper">
                 <div className="inputInner">
+                    <AttachedMedia mesFiles={mesFiles} setMesFiles={setMesFiles} />
                     {error ? (
-                        <div className="inputErrorWrapper">
-                            <div className="inputError">{error}</div>
-                            <button className="inputCancelBtn" onClick={() => { source.cancel() } }>Cancel</button>
-                        </div>
-                    ) : (<>
+                        <div className="inputError"> {error}</div>
+                    ) : uploadProgress ? ( <div className="inputUploadWrapper">
+                            <div className="inputUpload">{uploadProgress}</div>
+                            <button className="inputCancelBtn" onClick={() => { source.cancel() }}>Cancel</button>
+                    </div>) :
+                        (<>
                         <div className="inputBoxWrapper">
-                            <AttachedMedia mesFiles={mesFiles} setMesFiles={setMesFiles} />
                             <div className="inputBox">
                                 <input className="inputField" value={mesText} onChange={(e) => setMesText(e.target.value)} />
                                 <div className="inputButtons">

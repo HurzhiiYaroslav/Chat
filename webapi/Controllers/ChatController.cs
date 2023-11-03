@@ -41,6 +41,7 @@ namespace webapi.Controllers
         }
 
         [HttpPost("/SendMessage")]
+        [RequestSizeLimit(100_000_000)]
         public async Task<IActionResult> SendMessage([FromForm] SendMessageDTO messageDto)
         {
             try

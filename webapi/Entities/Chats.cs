@@ -61,10 +61,6 @@ namespace webapi.Entities
         public Enrollment? GetEnrollmentByUser(User user) => Enrollments.FirstOrDefault(e => e.User == user);
         public List<Enrollment>? GetEnrollmentsByRole(Role role) => Enrollments.Where(e => e.Role == role).ToList();
 
-        public static explicit operator Group(Task<Chat> v)
-        {
-            throw new NotImplementedException();
-        }
     }
 
 
