@@ -8,7 +8,7 @@
     transition: background-color 0.3s;
     margin-bottom: 5px;
     flex-wrap: wrap;
-
+    overflow: hidden;
     .Logo {
         border-radius: 50%;
         width: 4vh;
@@ -27,6 +27,14 @@
         height: 2vh;
         text-align: center;
         line-height: 2vh;
+    }
+
+    .chatOptions {
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        padding-right: 5px;
+        font-size: x-large;
     }
 
     &:hover {
@@ -78,6 +86,14 @@
         max-width: 9vw;
         overflow-wrap: break-word;
         margin: auto 0;
+    }
+
+    .statusBar {
+        position: absolute;
+        top: 0px;
+        right: 30px;
+        font-weight: bold;
+        font-size: 1.6vh;
     }
 
     .marker {

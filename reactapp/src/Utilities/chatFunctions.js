@@ -77,3 +77,16 @@ export const findLastMessage = (chat) => {
         
     }
 };
+
+export const getSender=(chat,message,chatData)=>{
+    const foundSender = chat?.Users?.find((element) => element.Id === message?.sender);
+    if (chat && chat.Companion && !foundSender) {
+        if (message.sender === chat.Companion.Id) {
+            return chat.Companion;
+        } else if (message.sender === localStorage.getItem("currentUser")) {
+            return chatData.user;
+        }
+    } else if (foundSender) {
+        return foundSender;
+    }
+}

@@ -33,3 +33,15 @@ export const Leave = (connection, ChatId) => {
 export const MarkAsSeen = (connection, chatId, MesId) => {
     connection.invoke("MarkAsSeen",chatId, MesId);
 };
+
+export const DeleteMessage = (connection, chatId, MesId) => {
+    connection.invoke("DeleteMessage", chatId, MesId);
+};
+
+export const PinMessage = (connection, chatId, MesId) => {
+    connection.invoke("PinMessage", chatId, MesId);
+};
+
+export const UnpinMessage = (connection, chatId, MesId) => {
+    connection.invoke("UnpinMessage", chatId, MesId);
+};

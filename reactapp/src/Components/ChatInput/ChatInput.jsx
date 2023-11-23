@@ -21,6 +21,7 @@ function ChatInput({ currentChat, connection }) {
         });
         setModal(false);
     };
+
     const handleBrowseFile = (e) => {
         const files = e.target.files;
         if (files) {
@@ -64,6 +65,7 @@ function ChatInput({ currentChat, connection }) {
                 .then(() => {
                     setMesFiles([]);
                     setMesText("");
+                    setUploadProgress(null);
                     setError(null);
                 })
                 .catch((error) => {
@@ -98,12 +100,6 @@ function ChatInput({ currentChat, connection }) {
         }
         setError(null)
     }, [mesFiles])
-
-    useEffect(() => {
-        if (error) {
-
-        }
-    },[error])
 
     return (
         <>

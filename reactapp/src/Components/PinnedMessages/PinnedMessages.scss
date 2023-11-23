@@ -1,0 +1,47 @@
+.pinned-messages-wrapper {
+    display: flex;
+    align-content: flex-start;
+    justify-content: space-between;
+    padding: 4px;
+    margin: 3px;
+    margin-bottom: 0px;
+    border-radius: 7px;
+    background-color: #f5f5f5;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+
+    .pinned-message {
+        width: -webkit-fill-available;
+        padding-left: 10px;
+        cursor: pointer;
+    }
+
+    .sender-name {
+        font-weight: bold;
+        margin-right: 5px;
+    }
+
+    .file-info {
+        color: #555;
+        margin-top: 5px;
+    }
+
+    .pin-buttons {
+        display: flex;
+        flex-direction: row;
+        align-content: flex-start;
+        justify-content: space-around;
+        align-items: flex-start;
+        gap: 10px;
+
+        .nav-button {
+            border: 1px solid grey;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-button:hover {
+            background-color: #dedede;
+        }
+    }
+}

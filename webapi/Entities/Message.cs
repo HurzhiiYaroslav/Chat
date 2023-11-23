@@ -9,6 +9,8 @@ namespace webapi.Entities
         public string? Content { get; set; } = "";
         public DateTime Timestamp { get; set; } = DateTime.Now;
         public bool IsSeen { get; set; } = false;
+        public bool IsDeleted { get; set; } = false;
+        public bool IsPined { get; set; } = false;
         public ICollection<FileEntity> Files { get; set; } = new List<FileEntity>();
         public required User Sender { get; set; }
     }

@@ -26,7 +26,9 @@ function AboutSection({ chatData, currentChat, connection, userRole, onlineUsers
             item={item}
             onlineUsers={onlineUsers}
             func={(userId) => OpenOrCreateDialog(userId, chatData, setCurrentChatId, connection)}
+            chat={currentChat }
             connection={connection}
+            contextMenu={"Member"}
         >
             {additionalContent}
         </DialogCard>
@@ -90,7 +92,7 @@ function AboutSection({ chatData, currentChat, connection, userRole, onlineUsers
                 renderDialogCard(item, (
                     <>
                         {renderRole(item)}
-                        {renderButton(item)}
+                        {false && renderButton(item)}
                     </>
                 ))
             ));
@@ -163,11 +165,11 @@ function AboutSection({ chatData, currentChat, connection, userRole, onlineUsers
                         currentChat.Messages.map((item) => {
                             return (
                                 item.Files && item.Files.length > 0 && (
-                                    <div key={item.Id}>
+                                    <>
                                         {item.Files.map((file) => {
                                             return <FileItem key={file.Id} file={file} />;
                                         })}
-                                    </div>
+                                    </>
                                 )
                             );
                         })

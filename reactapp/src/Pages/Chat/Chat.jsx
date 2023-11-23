@@ -253,6 +253,57 @@ const useChatEventHandlers = (connection, setChatData, setCurrentChatId, setOnli
             });
         };
 
+        const handleDeletedMessage = (mesId, chatId) => {
+            setChatData((prevChatData) => {
+                const updatedChats = prevChatData.chats.map((chat) => {
+                    if (chat.Id === chatId) {
+                        const updatedMessages = chat.Messages.filter((mes) => mes.Id !== mesId);
+
+                        return {
+                            ...chat,
+                            Messages: updatedMessages,
+                        };
+                    }
+                    return chat;
+                });
+
+                return {
+                    ...prevChatData,
+                    chats: updatedChats,
+                };
+            });
+        };
+
+        const handlePinnedMessage = (mesId, chatId,state) => {
+            setChatData((prevChatData) => {
+                const updatedChats = prevChatData.chats.map((chat) => {
+                    if (chat.Id === chatId) {
+                        const updatedMessages = chat.Messages.map((mes) => {
+                            if (mes.Id === mesId) {
+                                return {
+                                    ...mes,
+                                    Pin: state
+
+                                };
+                            }
+                            return mes;
+                        });
+
+                        return {
+                            ...chat,
+                            Messages: updatedMessages,
+                        };
+                    }
+                    return chat;
+                });
+
+                return {
+                    ...prevChatData,
+                    chats: updatedChats,
+                };
+            });
+        }
+
         connection.on('ConnectedUsers', handleConnectedUsers);
         connection.on('UserConnected', handleUserConnected);
         connection.on('UserData', handleUserData);
@@ -267,6 +318,9 @@ const useChatEventHandlers = (connection, setChatData, setCurrentChatId, setOnli
         connection.on('publicityChanged', handlePublicity);
         connection.on('updateEnrollment', handleUpdateEnrollment);
         connection.on("MessageHasSeen", handleSeenMessage);
+        connection.on("MessageDeleted", handleDeletedMessage);
+        connection.on("MessagePinned", handlePinnedMessage);
+        connection.on("MessageUnpinned", handlePinnedMessage);
 
         return () => {
             connection.off('ConnectedUsers', handleConnectedUsers);
@@ -283,6 +337,9 @@ const useChatEventHandlers = (connection, setChatData, setCurrentChatId, setOnli
             connection.off('publicityChanged', handlePublicity);
             connection.off('updateEnrollment', handleUpdateEnrollment);
             connection.off("MessageHasSeen", handleSeenMessage);
+            connection.off("MessageDeleted", handleDeletedMessage);
+            connection.off("MessagePinned", handlePinnedMessage);
+            connection.off("MessageUnpinned", handlePinnedMessage);
         };
     }, [connection, navigate, setChatData, setCurrentChatId, setOnlineUsers]);
 };
@@ -306,6 +363,7 @@ const Chat = () => {
             console.log(chatData);
         }
     }, [chatData]);
+
 
     return (
         <div className="chat-page">

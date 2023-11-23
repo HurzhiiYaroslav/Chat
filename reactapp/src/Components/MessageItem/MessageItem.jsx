@@ -1,18 +1,34 @@
-import React, { useEffect,useState,useMemo }  from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
+import { Menu, Item, Separator, Submenu, useContextMenu } from 'react-contexify';
 import { AvatarUrl, MediaUrl } from "../../Links"
 import FileItem from "../FileItem/FileItem";
 import MessageContext from '../Modals/MessageContext/MessageContext';
-import { getCurrentUserRole } from "../../Utilities/chatFunctions"
+import MessageCM from '../ContextMenus/MessageCM';
+import { getCurrentUserRole, getSender } from "../../Utilities/chatFunctions"
 import "./MessageItem.scss"
+import 'react-contexify/ReactContexify.css';
+
 
 function MessageItem({ item, chatData, currentChat, connection, setCurrentChatId }) {
-    const [contextModal, setContextModal] = useState(false);
     const [sender, setSender] = useState(null);
-
     const currentUser = useMemo(() => localStorage.getItem("currentUser"), []);
 
+    const [contextModal, setContextModal] = useState(false);
+    
     function handleContextModal() {
         setContextModal(!contextModal);
+    }
+
+    const MENU_ID = "MessageCM"+item?.Id;
+
+    const { show } = useContextMenu({
+        id: MENU_ID
+    });
+
+    function handleCM(e) {
+        show({
+            event: e,
+        });
     }
 
     function ConvertTime(time) {
@@ -32,7 +48,6 @@ function MessageItem({ item, chatData, currentChat, connection, setCurrentChatId
                         className="Image"
                         src={image}
                         alt="AttachedImage"
-                        //loading="lazy"
                     />
                 </div>
             );
@@ -63,22 +78,13 @@ function MessageItem({ item, chatData, currentChat, connection, setCurrentChatId
     };
 
     useEffect(() => {
-        const foundSender = currentChat?.Users?.find((element) => element.Id === item.sender);
-        if (currentChat && currentChat.Companion && !foundSender) {
-            if (item.sender === currentChat.Companion.Id) {
-                setSender(currentChat.Companion);
-            } else if (item.sender === currentUser) {
-                setSender(chatData.user);
-            }
-        } else if (foundSender) {
-            setSender(foundSender);
-        }
+        setSender(getSender(currentChat, item, chatData));
     }, [currentChat, chatData, item.sender, currentUser]);
 
 
     return (
         <>
-            {currentChat && currentChat.Type !== "Dialog" && (
+            {currentChat && (
                 <MessageContext
                     open={contextModal}
                     close={handleContextModal}
@@ -92,14 +98,25 @@ function MessageItem({ item, chatData, currentChat, connection, setCurrentChatId
                 >
                 </MessageContext>)}
 
-            <div id={item.Id} onClick={handleContextModal} className={`MessageItem ${item.sender === currentUser ? "User" : ""}`}>
+            {currentChat && (<MessageCM
+                MENU_ID={MENU_ID}
+                message={item}
+                sender={sender}
+                userRole={getCurrentUserRole(currentChat)}
+                connection={connection}
+                currentChat={currentChat}
+                chatData={chatData}
+                setCurrentChatId={setCurrentChatId}
+            ></MessageCM>
+               )}
+
+            <div id={item.Id} onClick={(e)=>handleCM(e)} className={`MessageItem ${item.sender === currentUser ? "User" : ""}`}>
                 {(sender || currentChat.Companion) && (
                     <div className="PhotoBox" >
                         <img
                             className="SenderPhoto"
                             src={AvatarUrl + (sender ? sender.Photo : currentChat.Companion ? currentChat.Companion.Photo : "default.jpg")}
                             alt="Avatar"
-                            loading="lazy"
                         />
                     </div>
                 )}
@@ -111,8 +128,8 @@ function MessageItem({ item, chatData, currentChat, connection, setCurrentChatId
                     <p className="SeenStatus">{isSeen(item) && (<span className="icon">&#10003;</span>)}</p>
                     <p className="MessageTime">{ConvertTime(item.time)}</p>
                 </div>
-                
             </div>
+            
         </>
     );
 }

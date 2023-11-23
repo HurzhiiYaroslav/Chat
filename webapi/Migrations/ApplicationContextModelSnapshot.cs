@@ -102,6 +102,12 @@ namespace webapi.Migrations
                     b.Property<string>("Content")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPined")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsSeen")
                         .HasColumnType("bit");
 

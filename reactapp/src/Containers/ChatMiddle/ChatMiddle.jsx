@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useRef } from 'react';
 import MessageBox from "../../Components/MessageBox/MesageBox"
 import ChatRight from "../ChatRight/ChatRight";
 import ChatInput from '../../Components/ChatInput/ChatInput';
+import PinnedMessages from '../../Components/PinnedMessages/PinnedMessages';
 import "./ChatMiddle.scss";
+
 
 function ChatMiddle({ connection, chatData, onlineUsers, currentChatId, setCurrentChatId } ) {
     const [currentChat, setCurrentChat] = useState(null);
@@ -24,6 +26,7 @@ function ChatMiddle({ connection, chatData, onlineUsers, currentChatId, setCurre
              
             <div className="chatMiddle">
                 <div className="MessagesWrapper">
+                    <PinnedMessages currentChat={currentChat} chatData={chatData} />
                     <MessageBox currentChat={currentChat} chatData={chatData} connection={connection} setCurrentChatId={setCurrentChatId} />
                     {currentChat && (currentChat.Type !== "Channel" || isPublisher()) &&
                         <ChatInput currentChat={currentChat} connection={connection } />

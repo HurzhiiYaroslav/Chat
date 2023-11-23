@@ -26,5 +26,6 @@
     <Folder Include="src\Components\AboutSection\" />
     <Folder Include="src\Components\MessageBox\" />
     <Folder Include="src\Components\ChatInput\" />
+    <Folder Include="src\Components\PinnedMessages\" />
   </ItemGroup>
 </Project>

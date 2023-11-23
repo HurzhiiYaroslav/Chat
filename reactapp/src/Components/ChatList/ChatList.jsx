@@ -1,8 +1,11 @@
-import React, { useState, useEffect,useMemo } from 'react';
-import {DialogCard,GroupCard,ChannelCard } from "../Cards/Cards"
+import React, { useState, useEffect, useMemo } from 'react';
+import { Menu, Item, Separator, Submenu, useContextMenu } from 'react-contexify';
+import { DialogCard, GroupCard, ChannelCard } from "../Cards/Cards"
+import ChatCM from '../ContextMenus/ChatCM';
 import { createDialod, joinChannel, searchChats } from '../../Utilities/signalrMethods';
 import { findLastMessage, getCurrentUserRole } from '../../Utilities/chatFunctions';
 import "./ChatList.scss"
+
 
 function ChatList({ connection, chatData, onlineUsers, setCurrentChatId,currentChatId }) { 
     const [listMode, setListMode] = useState("Filter");
@@ -11,6 +14,9 @@ function ChatList({ connection, chatData, onlineUsers, setCurrentChatId,currentC
     const [timeoutId, setTimeoutId] = useState(null);
     const [foundUsersMode, setFoundUsersMode] = useState("full");
     const [foundChannelsMode, setFoundChannelsMode] = useState("full");
+
+    const ContextType = "Chat";
+
     function Filter(item) {
         if (!item || fieldInput==="") {
             return item;
@@ -68,37 +74,78 @@ function ChatList({ connection, chatData, onlineUsers, setCurrentChatId,currentC
     }
 
     const chatCards = useMemo(() => {
+        const calculateUnreadCount = (chatItem) => {
+            let unreadCount = 0;
+            const unreadMes = findLastMessage(chatItem);
+            const onlyMessages = chatItem.Messages.filter(m => !m.notification);
+            if (unreadMes && chatItem.Messages) {
+                const unreadIndex = chatItem.Messages.findIndex(m => m.Id === unreadMes.Id);
+                if (unreadIndex >= 0) {
+                    unreadCount = onlyMessages.length - unreadIndex - 1;
+                }
+            }
+            else {
+                const curUser = localStorage.getItem("currentUser");
+                unreadCount = onlyMessages.filter(m => m.sender !== curUser).length;
+                if (unreadCount > 0) unreadCount = "!";
+            }
+            return unreadCount;
+        };
+
         return chatData.chats
             .filter(Filter)
             .map((item) => {
-                let chatCard = null;
                 const extraClass = `${item.Id === currentChatId ? 'active-chat' : ''}`;
-                let unreadCount = 0;
-                const unreadMes = findLastMessage(item);
-                const onlyMessages = item.Messages.filter(m => !m.notification);
-                if (unreadMes && item.Messages) {
-                    const unreadIndex = item.Messages.findIndex(m=>m.Id===unreadMes.Id);
-                    if (unreadIndex >= 0) {
-                        unreadCount = onlyMessages.length - unreadIndex - 1;
-                    }
-                }
-                else {
-                    const curUser = localStorage.getItem("currentUser");
-                    unreadCount = onlyMessages.filter(m => m.sender !== curUser).length;
-                    if (unreadCount > 0) unreadCount = "!";
-                }
-                if (item.Type === "Dialog") {
-                    chatCard = <DialogCard key={item.Id} item={item} onlineUsers={onlineUsers} func={setCurrentChatId} connection={connection} extraClasses={extraClass} >
-                        {unreadCount > 0 && (<div className="unread-count">{unreadCount}</div>) }
-                    </DialogCard >;
-                } else if (item.Type === "Group") {
-                    chatCard = <GroupCard key={item.Id} item={item} onlineUsers={onlineUsers} setCurrentChatId={setCurrentChatId} extraClasses={extraClass} >
-                        {unreadCount > 0 && (<div className="unread-count">{unreadCount}</div>)}
-                    </GroupCard >;                        ;
-                } else if (item.Type === "Channel") {
-                    chatCard = <ChannelCard key={item.Id} item={item} func={setCurrentChatId} extraClasses={extraClass} >
-                        {unreadCount > 0 && (<div className="unread-count">{unreadCount}</div>)}
-                    </ChannelCard >;
+                const unreadCount = calculateUnreadCount(item);
+
+                let chatCard = null;
+                switch (item.Type) {
+                    case 'Dialog':
+                        chatCard = (
+                            <DialogCard
+                                key={item.Id}
+                                item={item}
+                                onlineUsers={onlineUsers}
+                                func={setCurrentChatId}
+                                connection={connection}
+                                extraClasses={extraClass}
+                                contextMenu={ContextType}
+                            >
+                                {unreadCount > 0 && <div className="unread-count">{unreadCount}</div>}
+                            </DialogCard>
+                        );
+                        break;
+                    case 'Group':
+                        chatCard = (
+                            <GroupCard
+                                key={item.Id}
+                                item={item}
+                                onlineUsers={onlineUsers}
+                                setCurrentChatId={setCurrentChatId}
+                                extraClasses={extraClass}
+                                contextMenu={ContextType}
+                                connection={connection}
+                            >
+                                {unreadCount > 0 && <div className="unread-count">{unreadCount}</div>}
+                            </GroupCard>
+                        );
+                        break;
+                    case 'Channel':
+                        chatCard = (
+                            <ChannelCard
+                                key={item.Id}
+                                item={item}
+                                func={setCurrentChatId}
+                                extraClasses={extraClass}
+                                contextMenu={ContextType}
+                                connection={connection}
+                            >
+                                {unreadCount > 0 && <div className="unread-count">{unreadCount}</div>}
+                            </ChannelCard>
+                        );
+                        break;
+                    default:
+                        break;
                 }
 
                 return chatCard;
@@ -174,27 +221,30 @@ function ChatList({ connection, chatData, onlineUsers, setCurrentChatId,currentC
 
 
     return (
-        <div className="ListWrapper">
-            <div className="Bar">
-                <input type="text" className="BarField" onChange={(e) => setFieldInput(e.target.value)} value={fieldInput}></input>
-                <div className="BarBtns">
-                    <button className={`btn ${listMode === "Filter" ? "active" : ""}`} onClick={() => { setListMode("Filter"); setFieldInput("")}}>List </button>
-                    <button className={`btn ${listMode === "Search" ? "active" : ""}`} onClick={() => { setListMode("Search"); setFieldInput("") }}>Search </button>
+        <>
+            
+            <div className="ListWrapper">
+                <div className="Bar">
+                    <input type="text" className="BarField" onChange={(e) => setFieldInput(e.target.value)} value={fieldInput}></input>
+                    <div className="BarBtns">
+                        <button className={`btn ${listMode === "Filter" ? "active" : ""}`} onClick={() => { setListMode("Filter"); setFieldInput("") }}>List </button>
+                        <button className={`btn ${listMode === "Search" ? "active" : ""}`} onClick={() => { setListMode("Search"); setFieldInput("") }}>Search </button>
+                    </div>
                 </div>
-            </div>
-            <div className="List">
-                {chatData && listMode === "Filter" ? (
-                    chatCards
-                ) : listMode === "Search" ? (
-                    <>
+                <div className="List">
+                    {chatData && listMode === "Filter" ? (
+                        chatCards
+                    ) : listMode === "Search" ? (
+                        <>
                             {foundUsersSection}
                             {foundChannelsSection}
-                    </>
-                ) : (
-                    <div>empty</div>
-                )}
+                        </>
+                    ) : (
+                        <div>empty</div>
+                    )}
+                </div>
             </div>
-        </div>
+        </>
     );
 }
 export default ChatList;

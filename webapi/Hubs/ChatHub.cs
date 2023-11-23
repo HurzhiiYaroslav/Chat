@@ -61,6 +61,17 @@ namespace webapi.Hubs
             await base.OnConnectedAsync();
         }
 
+        private async Task Notify(string chatId, string message)
+        {
+            var notify = new JObject
+            {
+                ["chatId"] = chatId,
+                ["notification"] = message,
+                ["time"] = DateTime.Now,
+            };
+            await Clients.Group(chatId).SendAsync("notify", notify.ToString());
+        }
+
         public async Task<User> GetCurrentUserAsync()
         {
             var userId = connectedUsers[Context.ConnectionId];
@@ -73,26 +84,6 @@ namespace webapi.Hubs
             await Task.WhenAll(tasks);
         }
 
-        public async Task<string> SearchChats(string userInput)
-        {
-            var username = connectedUsers[Context.ConnectionId];
-            var user = await db.Clients.Include(u => u.Dialogs).Include(u=>u.Channels).FirstOrDefaultAsync(u => u.Id.ToString().ToUpper() == username.ToString().ToUpper());
-            return JSONConvertor.ConvertUserSearchToJson(user, userInput, db);
-        }
-
-        public async Task MarkAsSeen(string chatId,string mesId)
-        {
-            if(chatId==null|| mesId==null) return;
-            var user = await GetCurrentUserAsync();
-            var mes = await db.Messages.Include(m => m.Sender).FirstOrDefaultAsync(m => m.Id.ToString().ToLower()==mesId);
-            var chat = await db.GetChatById(chatId);
-            if (mes==null || mes.Sender == user || mes.IsSeen || !chat.Messages.Contains(mes)) return;
-            
-            mes.IsSeen = true;
-            await db.SaveChangesAsync();
-            await Clients.Group(chatId).SendAsync("MessageHasSeen", JSONConvertor.MessageToJsonObject(mes).ToString(),chatId);
-        }
-
         public override async Task OnDisconnectedAsync(Exception exception)
         {
             var username = connectedUsers[Context.ConnectionId];
@@ -101,16 +92,7 @@ namespace webapi.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
-        private async Task Notify(string chatId, string message)
-        {
-            var notify = new JObject
-            {
-                ["chatId"] = chatId,
-                ["notification"] = message,
-                ["time"] = DateTime.Now,
-            };
-            await Clients.Group(chatId).SendAsync("notify", notify.ToString());
-        }
+        
     }
 
 }

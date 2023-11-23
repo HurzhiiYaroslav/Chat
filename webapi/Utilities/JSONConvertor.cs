@@ -1,11 +1,7 @@
-﻿
-
-// Ignore Spelling: Json
-
+﻿// Ignore Spelling: Json
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Text.Json.Nodes;
 using webapi.Entities;
 
 namespace webapi.Utilities
@@ -120,7 +116,7 @@ namespace webapi.Utilities
                 { "Description", group.Description },
                 { "Logo", group.Logo },
                 { "Users", JArray.FromObject(group.Enrollments.Select(EnrollmentToJsonObject)) },
-                { "Messages", JArray.FromObject(group.Messages.OrderByDescending(m => m.Timestamp).Reverse().Select(MessageToJsonObject)) },
+                { "Messages", MessagesToJArray(group.Messages) },
             };
             LastSeenMessege(group.Messages, jsonObject);
             return jsonObject;
@@ -133,7 +129,7 @@ namespace webapi.Utilities
                 { "Id", dialog.Id },
                 { "Type", "Dialog" },
                 { "Companion", dialog.CompaionInfo(user) },
-                { "Messages", JArray.FromObject(dialog.Messages.OrderByDescending(m => m.Timestamp).Reverse().Select(MessageToJsonObject)) },
+                { "Messages", MessagesToJArray(dialog.Messages) },
             };
             LastSeenMessege(dialog.Messages, jsonObject);
             return jsonObject;
@@ -160,10 +156,19 @@ namespace webapi.Utilities
             { "Description", channel.Description },
             { "Logo", channel.Logo },
             { "Users", JArray.FromObject(channel.Enrollments.Select(EnrollmentToJsonObject)) },
-            { "Messages", JArray.FromObject(channel.Messages.OrderByDescending(m => m.Timestamp).Reverse().Select(MessageToJsonObject)) }
+            { "Messages", MessagesToJArray(channel.Messages) }
         };
 
             return jsonObject;
+        }
+
+        private static JArray MessagesToJArray(List<Message> messages)
+        {
+            return JArray.FromObject(messages
+                .Where(m=>!m.IsDeleted)
+                .OrderByDescending(m => m.Timestamp)
+                .Reverse()
+                .Select(MessageToJsonObject));
         }
 
         public static JObject EnrollmentToJsonObject(Enrollment enrollment)
@@ -199,6 +204,7 @@ namespace webapi.Utilities
             { "Id", message.Id },
             { "sender", message.Sender.Id },
             { "content", message.Content },
+            { "Pin", message.IsPined },
             { "time", message.Timestamp.ToString("yyyy-MM-ddTHH:mm:ss") },
             { "Files", JArray.FromObject(message.Files?.Select(FileToJsonObject)) }
         };

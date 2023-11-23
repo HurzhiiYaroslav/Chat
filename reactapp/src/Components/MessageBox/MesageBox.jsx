@@ -19,6 +19,8 @@ function MesageBox({currentChat,chatData,connection,setCurrentChatId }) {
         return groupedMessages;
     }
 
+    
+
     const messages = useMemo(() => {
         if (currentChat && currentChat.Messages && currentChat.Messages.length > 0) {
             const groupedMessages = groupMessagesByDate(currentChat.Messages);
@@ -55,7 +57,7 @@ function MesageBox({currentChat,chatData,connection,setCurrentChatId }) {
                 if (lastMessage) {
                     lastMessage.scrollIntoView({
                         behavior: 'smooth',
-                        block: 'center',
+                        block: 'end',
                     });
                 }
             }
@@ -117,14 +119,15 @@ function MesageBox({currentChat,chatData,connection,setCurrentChatId }) {
         const scrollContainer = mesContainer.current;
         if (!scrollContainer) return;
         const scrollPosition = scrollContainer.scrollTop + scrollContainer.clientHeight;
-        if (scrollContainer.scrollHeight - scrollPosition < 400 || (JSON.parse(item)?.sender === localStorage.getItem('currentUser'))) ScrollDown();
+        if (scrollContainer.scrollHeight - scrollPosition < 400 || (JSON.parse(item)?.sender === localStorage.getItem('currentUser'))) {
+                ScrollDown();
+        } 
     }
 
     useEffect(() => {
         const chatContainer = mesContainer.current;
         if (chatContainer) {
             chatContainer.addEventListener('scroll', handleScroll);
-
             return () => {
                 chatContainer.removeEventListener('scroll', handleScroll);
             };
@@ -146,7 +149,10 @@ function MesageBox({currentChat,chatData,connection,setCurrentChatId }) {
     
   return (
       <div className="messageBox" ref={mesContainer}>
-          {messages}
+          <>
+              {messages}
+          </>
+
       </div>
   );
 }

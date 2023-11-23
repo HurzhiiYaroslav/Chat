@@ -1,12 +1,12 @@
 import React, {useState } from 'react';
 import Modal from '../../General/Modal/Modal';
 import { OpenOrCreateDialog, isAbleToKick, DownloadFile } from '../../../Utilities/chatFunctions';
-import { Kick } from '../../../Utilities/signalrMethods';
+import { DeleteMessage, Kick } from '../../../Utilities/signalrMethods';
 import './MessageContext.scss';
 
 function MessageContext({ open, close, sender, userRole, message, connection, currentChat, chatData, setCurrentChatId }) {
     const [isCopied, setIsCopied] = useState(false);
-
+    const curUser = localStorage.getItem("currentUser");
     const handleCopyClick = () => {
         const textArea = document.createElement('textarea');
         textArea.value = message.content;
@@ -23,7 +23,7 @@ function MessageContext({ open, close, sender, userRole, message, connection, cu
     };
 
     const openDialog = () => {
-        if (sender && sender.Id !== localStorage.getItem("currentUser")) {
+        if (sender && sender.Id !== curUser) {
             OpenOrCreateDialog(sender.Id, chatData, setCurrentChatId, connection);
             handleClose();
         }
@@ -46,7 +46,7 @@ function MessageContext({ open, close, sender, userRole, message, connection, cu
 
     return (
         <Modal open={open} closeModal={handleClose} additionalClass="message-context">
-            {sender && sender.Id !== localStorage.getItem("currentUser") && (
+            {sender && sender.Id !== curUser && currentChat.Type !== "Dialog" && (
                 <button className="btn open-dialog-button" onClick={openDialog}>
                     Open dialog
                 </button>
@@ -64,6 +64,11 @@ function MessageContext({ open, close, sender, userRole, message, connection, cu
             {message?.Files?.length>0 && (
                 <button className="btn download-button" onClick={handleDownloadCLick} >
                     Download All
+                </button>
+            )}
+            {sender && (sender.Id === curUser || isAbleToKick(userRole, sender.Role)) && (
+                <button className="btn delete-button" onClick={() => DeleteMessage(connection,currentChat.Id,message.Id )}>
+                    Delete
                 </button>
             )}
         </Modal>
