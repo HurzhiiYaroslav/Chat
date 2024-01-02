@@ -45,3 +45,11 @@ export const PinMessage = (connection, chatId, MesId) => {
 export const UnpinMessage = (connection, chatId, MesId) => {
     connection.invoke("UnpinMessage", chatId, MesId);
 };
+
+export const PinChat = (connection, chatId) => {
+    connection.invoke("PinChat", chatId);
+};
+
+export const UnpinChat = (connection, chatId) => {
+    connection.invoke("UnpinChat", chatId);
+};

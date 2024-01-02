@@ -55,6 +55,9 @@ namespace webapi.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("int");
 
+                    b.Property<bool>("isPinned")
+                        .HasColumnType("bit");
+
                     b.HasKey("GroupId", "UserId");
 
                     b.HasIndex("UserId");

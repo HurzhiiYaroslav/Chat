@@ -9,6 +9,7 @@
     margin-bottom: 5px;
     flex-wrap: wrap;
     overflow: hidden;
+
     .Logo {
         border-radius: 50%;
         width: 4vh;
@@ -38,7 +39,7 @@
     }
 
     &:hover {
-        background-color: #ebebeb;
+        background-color: rgba(235, 235, 235, 0.5);
     }
 
     &:active {
@@ -68,6 +69,8 @@
             color: darkgray;
         }
     }
+
+    
 }
 
 .DialogItem {
@@ -117,4 +120,8 @@
 .active-chat {
     border-left: 5px solid #0056b3;
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
+}
+
+.pinned {
+    background-color: #d3ecfd;
 }

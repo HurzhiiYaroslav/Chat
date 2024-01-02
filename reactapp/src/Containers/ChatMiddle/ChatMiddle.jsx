@@ -26,7 +26,7 @@ function ChatMiddle({ connection, chatData, onlineUsers, currentChatId, setCurre
              
             <div className="chatMiddle">
                 <div className="MessagesWrapper">
-                    <PinnedMessages currentChat={currentChat} chatData={chatData} />
+                    {currentChat?.Messages && <PinnedMessages currentChat={currentChat} chatData={chatData} />}
                     <MessageBox currentChat={currentChat} chatData={chatData} connection={connection} setCurrentChatId={setCurrentChatId} />
                     {currentChat && (currentChat.Type !== "Channel" || isPublisher()) &&
                         <ChatInput currentChat={currentChat} connection={connection } />

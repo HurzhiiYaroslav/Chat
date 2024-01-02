@@ -64,7 +64,7 @@ function GroupCard({ item, onlineUsers, setCurrentChatId, extraClasses, contextM
         });
     }
     const countOnline = () => item.Users.filter(i => onlineUsers.includes(i.Id)).length;
-    const cardClasses = `GroupItem ${extraClasses}`;
+    const cardClasses = `GroupItem ${extraClasses} ${item.isPinned ? 'pinned-chat' : ''}`;
     return (
         <>
             <ChatCM MENU_ID={"ChatMenu" + item.Id} chat={item} connection={connection} />
@@ -91,7 +91,7 @@ function ChannelCard({ item, func, extraClasses, contextMenu = null, connection 
             event: e,
         });
     }
-    const cardClasses = `ChannelItem ${extraClasses}`;
+    const cardClasses = `ChannelItem ${extraClasses} ${item.isPinned ? 'pinned' : ''}`;
     return (
         <>
             <ChatCM MENU_ID={"ChatMenu" + item.Id} chat={item} connection={connection} />

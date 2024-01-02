@@ -25,6 +25,7 @@ namespace webapi.Entities
         public  Group? Group { get; set; }
         public string? LastSeenMes { get; set; } = "";
         public Role Role { get; set; } = Role.Reader;
+        public Boolean isPinned { get; set; } = false;
 
     }
 

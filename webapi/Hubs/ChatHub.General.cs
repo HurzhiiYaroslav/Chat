@@ -57,7 +57,7 @@ namespace webapi.Hubs
             }
             mes.IsPined = true;
             await db.SaveChangesAsync();
-            await Clients.Group(chatId).SendAsync("MessagePinned", mesId, chatId, true);
+            await Clients.Group(chatId).SendAsync("MessagePinChanged", mesId, chatId, true);
         }
 
         public async Task UnpinMessage(string chatId, string mesId)
@@ -74,7 +74,43 @@ namespace webapi.Hubs
             }
             mes.IsPined = false;
             await db.SaveChangesAsync();
-            await Clients.Group(chatId).SendAsync("MessageUnpinned", mesId, chatId, false);
+            await Clients.Group(chatId).SendAsync("MessagePinChanged", mesId, chatId, false);
+        }
+
+        public async Task PinChat(string chatId)
+        {
+            if (string.IsNullOrEmpty(chatId)) return;
+            var user = await GetCurrentUserAsync();
+            var chat = await db.GetChatById(chatId);
+            if (chat is Group group)
+            {
+                var userEnrollment = group.GetEnrollmentByUser(user);
+                userEnrollment.isPinned=true;
+                await db.SaveChangesAsync();
+                await Clients.Client(Context.ConnectionId).SendAsync("ChatPinChanged", chatId, true);
+            }
+            else
+            {
+                return;
+            }
+        }
+
+        public async Task UnpinChat(string chatId)
+        {
+            if (string.IsNullOrEmpty(chatId)) return;
+            var user = await GetCurrentUserAsync();
+            var chat = await db.GetChatById(chatId);
+            if (chat is Group group)
+            {
+                var userEnrollment = group.GetEnrollmentByUser(user);
+                userEnrollment.isPinned = false;
+                await db.SaveChangesAsync();
+                await Clients.Client(Context.ConnectionId).SendAsync("ChatPinChanged", chatId, false);
+            }
+            else
+            {
+                return;
+            }
         }
     }
 }

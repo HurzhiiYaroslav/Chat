@@ -56,7 +56,7 @@ namespace webapi.Utilities
                 var result = new
                 {
                     Users = foundUsers.Select(u => UserToJsonObject(u)).ToList(),
-                    Channels = foundChannels.Select(c => ChannelToJsonObject(c)).ToList()
+                    Channels = foundChannels.Select(c => ChannelToJsonObject(c,user)).ToList()
                 };
 
                 return JsonConvert.SerializeObject(result);
@@ -77,7 +77,6 @@ namespace webapi.Utilities
             var companions = dialogs
                 .Select(d => d.User1 == user ? d.User2 : d.User1)
                 .ToList();
-
             return companions;
         }
 
@@ -94,11 +93,11 @@ namespace webapi.Utilities
                 }
                 else if (chat is Channel channel)
                 {
-                    chatDataList.Add(ChannelToJsonObject(channel));
+                    chatDataList.Add(ChannelToJsonObject(channel,user));
                 }
                 else if (chat is Group group)
                 {
-                    chatDataList.Add(GroupToJsonObject(group));
+                    chatDataList.Add(GroupToJsonObject(group,user));
                 }
                 
             }
@@ -106,7 +105,7 @@ namespace webapi.Utilities
             return chatDataList;
         }
 
-        public static JObject GroupToJsonObject(Group group)
+        public static JObject GroupToJsonObject(Group group, User user = null)
         {
             var jsonObject = new JObject
             {
@@ -117,6 +116,7 @@ namespace webapi.Utilities
                 { "Logo", group.Logo },
                 { "Users", JArray.FromObject(group.Enrollments.Select(EnrollmentToJsonObject)) },
                 { "Messages", MessagesToJArray(group.Messages) },
+                { "isPinned", group.GetEnrollmentByUser(user).isPinned  }
             };
             LastSeenMessege(group.Messages, jsonObject);
             return jsonObject;
@@ -145,7 +145,7 @@ namespace webapi.Utilities
             return obj;
         }
 
-        public static JObject ChannelToJsonObject(Channel channel)
+        public static JObject ChannelToJsonObject(Channel channel, User user=null)
         {
             var jsonObject = new JObject
         {
@@ -156,7 +156,8 @@ namespace webapi.Utilities
             { "Description", channel.Description },
             { "Logo", channel.Logo },
             { "Users", JArray.FromObject(channel.Enrollments.Select(EnrollmentToJsonObject)) },
-            { "Messages", MessagesToJArray(channel.Messages) }
+            { "Messages", MessagesToJArray(channel.Messages) },
+           { "isPinned", channel.GetEnrollmentByUser(user).isPinned  }
         };
 
             return jsonObject;

@@ -92,64 +92,70 @@ function ChatList({ connection, chatData, onlineUsers, setCurrentChatId,currentC
             return unreadCount;
         };
 
-        return chatData.chats
-            .filter(Filter)
-            .map((item) => {
-                const extraClass = `${item.Id === currentChatId ? 'active-chat' : ''}`;
-                const unreadCount = calculateUnreadCount(item);
+        const pinnedChats = chatData.chats.filter(item => item.isPinned);
+        const otherChats = chatData.chats.filter(item => !item.isPinned);
 
-                let chatCard = null;
-                switch (item.Type) {
-                    case 'Dialog':
-                        chatCard = (
-                            <DialogCard
-                                key={item.Id}
-                                item={item}
-                                onlineUsers={onlineUsers}
-                                func={setCurrentChatId}
-                                connection={connection}
-                                extraClasses={extraClass}
-                                contextMenu={ContextType}
-                            >
-                                {unreadCount > 0 && <div className="unread-count">{unreadCount}</div>}
-                            </DialogCard>
-                        );
-                        break;
-                    case 'Group':
-                        chatCard = (
-                            <GroupCard
-                                key={item.Id}
-                                item={item}
-                                onlineUsers={onlineUsers}
-                                setCurrentChatId={setCurrentChatId}
-                                extraClasses={extraClass}
-                                contextMenu={ContextType}
-                                connection={connection}
-                            >
-                                {unreadCount > 0 && <div className="unread-count">{unreadCount}</div>}
-                            </GroupCard>
-                        );
-                        break;
-                    case 'Channel':
-                        chatCard = (
-                            <ChannelCard
-                                key={item.Id}
-                                item={item}
-                                func={setCurrentChatId}
-                                extraClasses={extraClass}
-                                contextMenu={ContextType}
-                                connection={connection}
-                            >
-                                {unreadCount > 0 && <div className="unread-count">{unreadCount}</div>}
-                            </ChannelCard>
-                        );
-                        break;
-                    default:
-                        break;
-                }
+        const generateChatCard = (item) => {
+            const extraClass = `${item.Id === currentChatId ? 'active-chat' : ''}`;
+            const unreadCount = calculateUnreadCount(item);
 
-                return chatCard;
-            });
+            let chatCard = null;
+            switch (item.Type) {
+                case 'Dialog':
+                    chatCard = (
+                        <DialogCard
+                            key={item.Id}
+                            item={item}
+                            onlineUsers={onlineUsers}
+                            func={setCurrentChatId}
+                            connection={connection}
+                            extraClasses={extraClass}
+                            contextMenu={ContextType}
+                        >
+                            {unreadCount > 0 && <div className="unread-count">{unreadCount}</div>}
+                        </DialogCard>
+                    );
+                    break;
+                case 'Group':
+                    chatCard = (
+                        <GroupCard
+                            key={item.Id}
+                            item={item}
+                            onlineUsers={onlineUsers}
+                            setCurrentChatId={setCurrentChatId}
+                            extraClasses={extraClass}
+                            contextMenu={ContextType}
+                            connection={connection}
+                        >
+                            {unreadCount > 0 && <div className="unread-count">{unreadCount}</div>}
+                        </GroupCard>
+                    );
+                    break;
+                case 'Channel':
+                    chatCard = (
+                        <ChannelCard
+                            key={item.Id}
+                            item={item}
+                            func={setCurrentChatId}
+                            extraClasses={extraClass}
+                            contextMenu={ContextType}
+                            connection={connection}
+                        >
+                            {unreadCount > 0 && <div className="unread-count">{unreadCount}</div>}
+                        </ChannelCard>
+                    );
+                    break;
+                default:
+                    break;
+            }
+
+            return chatCard;
+        };
+
+        const pinnedChatCards = pinnedChats.map(generateChatCard);
+        const otherChatCards = otherChats.map(generateChatCard);
+
+        return [...pinnedChatCards, ...otherChatCards];
     }, [chatData, currentChatId, onlineUsers, connection]);
 
     const foundUsersSection = useMemo(() => {

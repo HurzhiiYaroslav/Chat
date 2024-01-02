@@ -304,6 +304,25 @@ const useChatEventHandlers = (connection, setChatData, setCurrentChatId, setOnli
             });
         }
 
+        const handleChatPinChange = (chatId, state) => {
+            setChatData((prevChatData) => {
+                const updatedChats = prevChatData.chats.map((chat) => {
+                    if (chat.Id === chatId) {
+                        return {
+                            ...chat,
+                            isPinned: state,
+                        };
+                    }
+                    return chat;
+                });
+
+                return {
+                    ...prevChatData,
+                    chats: updatedChats,
+                };
+            });
+        }
+
         connection.on('ConnectedUsers', handleConnectedUsers);
         connection.on('UserConnected', handleUserConnected);
         connection.on('UserData', handleUserData);
@@ -319,8 +338,8 @@ const useChatEventHandlers = (connection, setChatData, setCurrentChatId, setOnli
         connection.on('updateEnrollment', handleUpdateEnrollment);
         connection.on("MessageHasSeen", handleSeenMessage);
         connection.on("MessageDeleted", handleDeletedMessage);
-        connection.on("MessagePinned", handlePinnedMessage);
-        connection.on("MessageUnpinned", handlePinnedMessage);
+        connection.on("MessagePinChanged", handlePinnedMessage);
+        connection.on("ChatPinChanged", handleChatPinChange);
 
         return () => {
             connection.off('ConnectedUsers', handleConnectedUsers);
@@ -338,8 +357,8 @@ const useChatEventHandlers = (connection, setChatData, setCurrentChatId, setOnli
             connection.off('updateEnrollment', handleUpdateEnrollment);
             connection.off("MessageHasSeen", handleSeenMessage);
             connection.off("MessageDeleted", handleDeletedMessage);
-            connection.off("MessagePinned", handlePinnedMessage);
-            connection.off("MessageUnpinned", handlePinnedMessage);
+            connection.off("MessagePinChanged", handlePinnedMessage);
+            connection.off("ChatPinChanged", handleChatPinChange);
         };
     }, [connection, navigate, setChatData, setCurrentChatId, setOnlineUsers]);
 };
