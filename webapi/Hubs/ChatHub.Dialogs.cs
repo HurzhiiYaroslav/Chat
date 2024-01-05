@@ -17,15 +17,17 @@ namespace webapi.Hubs
                 return;
             }
 
-            if (await db.Dialogs.AnyAsync(d => (d.User1 == user && d.User2 == companion) || (d.User1 == companion && d.User2 == user)))
+            if (user == companion)
             {
-                await Clients.Client(Context.ConnectionId).SendAsync("setError", "Dialog already exists");
+                await Clients.Client(Context.ConnectionId).SendAsync("setError", "Something went wrong");
                 return;
             }
 
-            if(user == companion)
+            var dialogIfExist = await db.Dialogs.Include(m=>m.Messages).FirstOrDefaultAsync(d => (d.User1 == user && d.User2 == companion) || (d.User1 == companion && d.User2 == user));
+
+            if (dialogIfExist !=null && !dialogIfExist.Messages.All(m=>m.IsDeleted))
             {
-                await Clients.Client(Context.ConnectionId).SendAsync("setError", "Something went wrong");
+                await Clients.Client(Context.ConnectionId).SendAsync("setError", "Dialog already exists");
                 return;
             }
 

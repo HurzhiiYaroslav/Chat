@@ -41,6 +41,34 @@ namespace webapi.Migrations
                     b.UseTphMappingStrategy();
                 });
 
+            modelBuilder.Entity("webapi.Entities.ChatHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ChatId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChatId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ChatHistory");
+                });
+
             modelBuilder.Entity("webapi.Entities.Enrollment", b =>
                 {
                     b.Property<Guid>("GroupId")
@@ -226,6 +254,25 @@ namespace webapi.Migrations
                     b.HasDiscriminator().HasValue("Channel");
                 });
 
+            modelBuilder.Entity("webapi.Entities.ChatHistory", b =>
+                {
+                    b.HasOne("webapi.Entities.Chat", "Chat")
+                        .WithMany("History")
+                        .HasForeignKey("ChatId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("webapi.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Chat");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("webapi.Entities.Enrollment", b =>
                 {
                     b.HasOne("webapi.Entities.Group", "Group")
@@ -299,6 +346,8 @@ namespace webapi.Migrations
 
             modelBuilder.Entity("webapi.Entities.Chat", b =>
                 {
+                    b.Navigation("History");
+
                     b.Navigation("Messages");
                 });
 

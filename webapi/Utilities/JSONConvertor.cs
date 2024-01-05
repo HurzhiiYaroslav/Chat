@@ -72,6 +72,7 @@ namespace webapi.Utilities
         {
             var dialogs = db.Dialogs
                 .Where(d => d.User1 == user || d.User2 == user)
+                .Where(d=>!d.Messages.All(m=>m.IsDeleted))
                 .ToList();
 
             var companions = dialogs

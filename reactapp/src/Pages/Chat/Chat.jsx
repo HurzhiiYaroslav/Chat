@@ -119,13 +119,19 @@ const useChatEventHandlers = (connection, setChatData, setCurrentChatId, setOnli
         };
 
         const handleNewChat = (chat) => {
+            const newChat = JSON.parse(chat);
             setChatData((prevChatData) => {
-                return {
-                    ...prevChatData,
-                    chats: [...prevChatData.chats, JSON.parse(chat)],
-                };
+                const chatExists = prevChatData.chats.some((existingChat) => existingChat.Id === newChat.Id);
+                if (!chatExists) {
+                    return {
+                        ...prevChatData,
+                        chats: [...prevChatData.chats, newChat],
+                    };
+                }
+                return prevChatData;
             });
-            setCurrentChatId(JSON.parse(chat).Id);
+
+            setCurrentChatId(newChat.Id);
         };
 
         const handleNotify = (data) => {
@@ -323,6 +329,13 @@ const useChatEventHandlers = (connection, setChatData, setCurrentChatId, setOnli
             });
         }
 
+        const handleChatDeleted = (chatId) => {
+            setChatData((prevChatData) => ({
+                ...prevChatData,
+                chats: prevChatData.chats.filter((chat) => chat.Id !== chatId),
+            }));
+        };
+
         connection.on('ConnectedUsers', handleConnectedUsers);
         connection.on('UserConnected', handleUserConnected);
         connection.on('UserData', handleUserData);
@@ -340,6 +353,7 @@ const useChatEventHandlers = (connection, setChatData, setCurrentChatId, setOnli
         connection.on("MessageDeleted", handleDeletedMessage);
         connection.on("MessagePinChanged", handlePinnedMessage);
         connection.on("ChatPinChanged", handleChatPinChange);
+        connection.on("ChatDeleted", handleChatDeleted);
 
         return () => {
             connection.off('ConnectedUsers', handleConnectedUsers);
@@ -359,6 +373,7 @@ const useChatEventHandlers = (connection, setChatData, setCurrentChatId, setOnli
             connection.off("MessageDeleted", handleDeletedMessage);
             connection.off("MessagePinChanged", handlePinnedMessage);
             connection.off("ChatPinChanged", handleChatPinChange);
+            connection.off("ChatDeleted", handleChatDeleted);
         };
     }, [connection, navigate, setChatData, setCurrentChatId, setOnlineUsers]);
 };

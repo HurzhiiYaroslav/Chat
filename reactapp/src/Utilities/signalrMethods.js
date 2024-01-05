@@ -53,3 +53,7 @@ export const PinChat = (connection, chatId) => {
 export const UnpinChat = (connection, chatId) => {
     connection.invoke("UnpinChat", chatId);
 };
+
+export const DeleteChat = (connection, chatId) => {
+    connection.invoke("DeleteChat", chatId);
+};

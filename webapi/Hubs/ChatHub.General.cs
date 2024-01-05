@@ -112,5 +112,29 @@ namespace webapi.Hubs
                 return;
             }
         }
+
+        public async Task DeleteChat(string chatId)
+        {
+            var chat = await db.GetChatById(chatId);
+            var user = await GetCurrentUserAsync();
+            if (chat is Dialog dialog)
+            {
+                dialog.Messages.ForEach(message => { message.IsDeleted = true; });
+                await db.SaveChangesAsync();
+                await Clients.Group(chatId).SendAsync("ChatDeleted", chatId);
+            }
+            else if (chat is Group group)
+            {
+                group.Messages.ForEach(message => { message.IsDeleted = true; });
+                group.Enrollments.Clear();
+                if(group is Channel channel)
+                {
+                    channel.IsPublic = false;
+                }
+                await db.SaveChangesAsync();
+                await Clients.Group(chatId).SendAsync("ChatDeleted", chatId);
+            }
+            Console.WriteLine("ChatDeleted");
+        }
     }
 }

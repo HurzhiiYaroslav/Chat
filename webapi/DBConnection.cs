@@ -35,6 +35,12 @@ namespace webapi
                 .HasKey(c => c.Id);
             modelBuilder.Entity<Chat>()
                 .HasMany(b => b.Messages);
+            modelBuilder.Entity<Chat>()
+                .HasMany(b => b.History);
+
+            modelBuilder.Entity<ChatHistory>()
+                .HasOne(ch => ch.Chat)
+                .WithMany(c => c.History);
 
             modelBuilder.Entity<Dialog>()
                 .HasBaseType<Chat>();
@@ -106,7 +112,7 @@ namespace webapi
                 .Include(d => d.User2)
                 .Include(d => d.Messages)
                 .ThenInclude(m => m.Files)
-                .Where(d => d.User1 == user || d.User2 == user)
+                .Where(d => d.User1 == user || d.User2 == user && !d.Messages.All(m=>m.IsDeleted))
                 .Select(d => new
                 {
                     Chat = (Chat)d,
@@ -119,7 +125,7 @@ namespace webapi
                 .Include(g => g.Users)
                 .Include(g => g.Messages)
                 .ThenInclude(m => m.Files)
-                .Where(g => g.Users.Any(u => u == user) && g.GetType() != typeof(Channel))
+                .Where(g => g.Users.Any(u => u == user) && g.GetType() != typeof(Channel) && !g.Messages.All(m => m.IsDeleted))
                 .Select(g => new
                 {
                     Chat = (Chat)g,
@@ -132,7 +138,7 @@ namespace webapi
                 .Include(g => g.Users)
                 .Include(g => g.Messages)
                 .ThenInclude(m => m.Files)
-                .Where(g => g.Users.Any(u => u == user))
+                .Where(g => g.Users.Any(u => u == user) && !g.Messages.All(m => m.IsDeleted))
                 .Select(g => new
                 {
                     Chat = (Chat)g,
