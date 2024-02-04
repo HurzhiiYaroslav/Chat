@@ -3,6 +3,7 @@ import { DialogCard } from '../Cards/Cards';
 import FileItem from '../FileItem/FileItem';
 import UserListModal from '../Modals/UserListModal/UserListModal';
 import DoYouWantModal from '../Modals/DoYouWantModal/DoYouWantModal';
+import LogsModal from '../Modals/LogsModal/LogsModal';
 import { OpenOrCreateDialog, isAbleToKick } from "../../Utilities/chatFunctions"
 import { Kick ,updateRole,changePublicity } from "../../Utilities/signalrMethods"
 import "./AboutSection.scss";
@@ -13,6 +14,7 @@ function AboutSection({ chatData, currentChat, connection, userRole, onlineUsers
     const [role, setRole] = useState("Publisher");
     const [kickModal, setKickModal] = useState(false);
     const [userToKick, setUserToKick] = useState(null);
+    const [logsModal, setLogsModal] = useState(false);
 
     const publicity = currentChat && currentChat.isPublic ? "Public" : "non-Public";
 
@@ -83,9 +85,7 @@ function AboutSection({ chatData, currentChat, connection, userRole, onlineUsers
             </div>
         );
     };
-
     
-
     const renderedMembersSection = useMemo(() => {
         if (currentChat && currentChat.Users && currentChat.Users.length > 0) {
             return currentChat.Users.slice().reverse().map((item) => (
@@ -113,6 +113,12 @@ function AboutSection({ chatData, currentChat, connection, userRole, onlineUsers
         }
         return null;
     }, [currentChat, role, onlineUsers]);
+
+    const handleViewLogs = () => {
+        setLogsModal(!logsModal);
+    }
+
+
 
     const handleUpdateRole = (id) => {
         updateRole(connection, currentChat.Id, id, role);
@@ -144,21 +150,32 @@ function AboutSection({ chatData, currentChat, connection, userRole, onlineUsers
                     text={`to kick "${userToKick.Name}" `}
                 />
             )}
-                {currentChat && currentChat.Type !== "Dialog" && (
-                <div className="aboutButtonsTop">
+            {logsModal && (
+                <LogsModal
+                    connection={connection}
+                    chat={currentChat}
+                    open={logsModal}
+                    close={handleViewLogs}>
+                </LogsModal>
+            )}
+            {currentChat && currentChat.Type !== "Dialog" && (
+                <>
+                    <div className="aboutButtonsTop">
                         <button className={aboutSection === "Files" ? "active" : ""} onClick={() => setAboutSection("Files")}>
                             Files
                         </button>
                         <button className={aboutSection === "Members" ? "active" : ""} onClick={() => setAboutSection("Members")}>
                             Members
                         </button>
-                        { userRole === "Owner" && (
+                        {userRole === "Owner" && (
                             <button className={aboutSection === "Management" ? "active" : ""} onClick={() => setAboutSection("Management")}>
                                 Manage
                             </button>
                         )}
-                </div>
-                )}
+                    </div>
+                    
+                </>
+            )}
             {chatData && currentChat && (
                 <div className="aboutContent">
                     {aboutSection === "Files" ? (
@@ -199,11 +216,13 @@ function AboutSection({ chatData, currentChat, connection, userRole, onlineUsers
                                                 Change
                                             </button>
                                         </div>)}
-
+                                            <div className="viewLogs">
+                                                <button className="viewLogsBtn" onClick={()=>handleViewLogs()}>View Logs</button>
+                                            </div>
                                     </div>
-                            ) : <></>}
+                            ) : (null)}
                         </>
-                    ) : <></>}
+                        ) : (null) }
                 </div>
             )}
         </>

@@ -106,7 +106,7 @@ namespace webapi.Utilities
             return chatDataList;
         }
 
-        public static JObject GroupToJsonObject(Group group, User user = null)
+        public static JObject GroupToJsonObject(Group group, User? user = null)
         {
             var jsonObject = new JObject
             {
@@ -146,7 +146,7 @@ namespace webapi.Utilities
             return obj;
         }
 
-        public static JObject ChannelToJsonObject(Channel channel, User user=null)
+        public static JObject ChannelToJsonObject(Channel channel, User? user=null)
         {
             var jsonObject = new JObject
         {

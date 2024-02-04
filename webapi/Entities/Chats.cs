@@ -8,16 +8,16 @@ namespace webapi.Entities
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public List<Message> Messages { get; set; } = new List<Message>();
-        public List<ChatHistory> History { get; set; } = new List<ChatHistory>();
+        public List<ChatLog> Logs { get; set; } = new List<ChatLog>();
     }
 
-    public class ChatHistory
+    public class ChatLog
     {
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
         public Chat Chat { get; set; }
         public string Action { get; set; }
         public User User { get; set; }
-        public DateTime Timestamp { get; set; }
+        public DateTime Timestamp { get; set; } = DateTime.Now;
     }
 
     public class Dialog : Chat

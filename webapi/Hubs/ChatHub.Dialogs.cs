@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
+using webapi.Entities;
 using webapi.Utilities;
 
 namespace webapi.Hubs

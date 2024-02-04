@@ -36,11 +36,11 @@ namespace webapi
             modelBuilder.Entity<Chat>()
                 .HasMany(b => b.Messages);
             modelBuilder.Entity<Chat>()
-                .HasMany(b => b.History);
+                .HasMany(b => b.Logs);
 
-            modelBuilder.Entity<ChatHistory>()
+            modelBuilder.Entity<ChatLog>()
                 .HasOne(ch => ch.Chat)
-                .WithMany(c => c.History);
+                .WithMany(c => c.Logs);
 
             modelBuilder.Entity<Dialog>()
                 .HasBaseType<Chat>();
@@ -81,6 +81,7 @@ namespace webapi
             Id = Id.ToUpper();
             var dialog = await Dialogs
                 .Include(d=>d.Messages)
+                .Include(d=>d.Logs)
                 .FirstOrDefaultAsync(d => d.Id.ToString() == Id);
             if (dialog != null)
             {
@@ -89,6 +90,7 @@ namespace webapi
             var group = await Groups
                 .Include(g=>g.Messages)
                 .Include(g => g.Users)
+                .Include(g => g.Logs)
                 .FirstOrDefaultAsync(g => g.Id.ToString() == Id);
             if (group != null)
             {
@@ -97,6 +99,7 @@ namespace webapi
             var channel = await Channels
                 .Include(c => c.Messages)
                 .Include(c => c.Users)
+                .Include(c => c.Logs)
                 .FirstOrDefaultAsync(g => g.Id.ToString() == Id);
             if (group != null)
             {

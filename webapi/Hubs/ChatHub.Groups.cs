@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using webapi.Utilities;
 using webapi.Entities;
 using Newtonsoft.Json;
+using System;
 
 namespace webapi.Hubs
 {
@@ -37,11 +38,19 @@ namespace webapi.Hubs
             }
         }
 
-        private async Task AddUserToChat(Chat room, User invited)
+        private async Task AddUserToChat(Chat chat, User invited)
         {
 
-            if (room is Group group) group.Users.Add(invited);
-            if (room is Channel channel) channel.Users.Add(invited);
+            if (chat is Group group) group.Users.Add(invited);
+            if (chat is Channel channel) channel.Users.Add(invited);
+            User user = await GetCurrentUserAsync();
+            var newLog = new ChatLog
+            {
+                Action = " invited " + invited.Name,
+                User = user,
+            };
+            db.Add(newLog);
+            chat.Logs.Add(newLog);
             await db.SaveChangesAsync();
         }
 
@@ -63,7 +72,13 @@ namespace webapi.Hubs
             var chat = await db.GetChatById(chatId);
 
             await HandleMemberLeft(chat, user, Context.ConnectionId);
-
+            var newLog = new ChatLog
+            {
+                Action = " left the chat",
+                User = user,
+            };
+            db.Add(newLog);
+            chat.Logs.Add(newLog);
             if (chat is Channel channel) await _channelService.Leave(channel, user);
             else if (chat is Group group) await _groupService.Leave(group, user);
             
@@ -81,6 +96,13 @@ namespace webapi.Hubs
                 if (userEnrollment.Role > group.GetEnrollmentByUser(exile).Role)
                 {
                     group.Users.Remove(exile);
+                    var newLog = new ChatLog
+                    {
+                        Action = " kicked " + exile.Name,
+                        User = user,
+                    };
+                    db.Add(newLog);
+                    chat.Logs.Add(newLog);
                     await db.SaveChangesAsync();
                     await HandleMemberLeft(chat, exile, connectedUsers.FirstOrDefault(x => x.Value == exileId).Key);
                     await Notify(chatId, user.Name + " kicked " + exile.Name);
@@ -93,7 +115,7 @@ namespace webapi.Hubs
         }
 
         private async Task HandleMemberLeft(Chat chat, User member, string? connection)
-        {
+        { 
             var jObject = new JObject
             {
                 ["chatId"] = chat.Id,

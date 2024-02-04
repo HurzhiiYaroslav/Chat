@@ -17,7 +17,7 @@ namespace webapi.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.10")
+                .HasAnnotation("ProductVersion", "8.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -30,7 +30,8 @@ namespace webapi.Migrations
 
                     b.Property<string>("Discriminator")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
 
                     b.HasKey("Id");
 
@@ -41,7 +42,7 @@ namespace webapi.Migrations
                     b.UseTphMappingStrategy();
                 });
 
-            modelBuilder.Entity("webapi.Entities.ChatHistory", b =>
+            modelBuilder.Entity("webapi.Entities.ChatLog", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -66,7 +67,7 @@ namespace webapi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ChatHistory");
+                    b.ToTable("ChatLog");
                 });
 
             modelBuilder.Entity("webapi.Entities.Enrollment", b =>
@@ -254,10 +255,10 @@ namespace webapi.Migrations
                     b.HasDiscriminator().HasValue("Channel");
                 });
 
-            modelBuilder.Entity("webapi.Entities.ChatHistory", b =>
+            modelBuilder.Entity("webapi.Entities.ChatLog", b =>
                 {
                     b.HasOne("webapi.Entities.Chat", "Chat")
-                        .WithMany("History")
+                        .WithMany("Logs")
                         .HasForeignKey("ChatId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -346,7 +347,7 @@ namespace webapi.Migrations
 
             modelBuilder.Entity("webapi.Entities.Chat", b =>
                 {
-                    b.Navigation("History");
+                    b.Navigation("Logs");
 
                     b.Navigation("Messages");
                 });

@@ -39,42 +39,60 @@ namespace webapi.Hubs
             if (mes != null && (mes.Sender == user || userEnrollment.Role > group.GetEnrollmentByUser(mes.Sender).Role) && chat.Messages.Contains(mes))
             {
                 mes.IsDeleted = true;
+                var newLog = new ChatLog
+                {
+                    Action = $" deleted message: Sender={mes.Sender.Name}, Content={mes.Content}, Time-stamp={DateTime.Now}, Files = {mes.Files.Count}",
+                    User = user,
+                };
+                db.Add(newLog);
+                chat.Logs.Add(newLog);
                 await db.SaveChangesAsync();
                 await Clients.Group(chatId).SendAsync("MessageDeleted", mesId, chatId);
             }
         }
-        public async Task PinMessage(string chatId, string mesId)
+
+        private async Task PinOrUnpinMessage(string chatId, string mesId, bool isPinning)
         {
             if (string.IsNullOrEmpty(chatId) || string.IsNullOrEmpty(mesId)) return;
+
             var user = await GetCurrentUserAsync();
             var mes = await db.Messages.Include(m => m.Sender).FirstOrDefaultAsync(m => m.Id.ToString().ToLower() == mesId);
-            if (mes==null||mes.IsPined) return;
+
+            if (mes == null || (isPinning && mes.IsPined) || (!isPinning && !mes.IsPined)) return;
+
             var chat = await db.GetChatById(chatId);
+
             if (chat is Channel channel)
             {
                 var userEnrollment = channel.GetEnrollmentByUser(user);
                 if (userEnrollment?.Role == Role.Reader) return;
             }
-            mes.IsPined = true;
+
+            mes.IsPined = isPinning;
+
+            var actionType = isPinning ? "pinned" : "unpinned";
+
+            var newLog = new ChatLog
+            {
+                Action = $"{actionType} message: Sender={mes.Sender.Name}, Content={mes.Content}, Time-stamp={DateTime.UtcNow}, Files = {mes.Files.Count}",
+                User = user,
+            };
+
+            db.Add(newLog);
+            chat.Logs.Add(newLog);
+
             await db.SaveChangesAsync();
-            await Clients.Group(chatId).SendAsync("MessagePinChanged", mesId, chatId, true);
+            await Clients.Group(chatId).SendAsync("MessagePinChanged", mesId, chatId, isPinning);
+        }
+
+        public async Task PinMessage(string chatId, string mesId)
+        {
+            await PinOrUnpinMessage(chatId, mesId, true);
         }
 
         public async Task UnpinMessage(string chatId, string mesId)
         {
-            if (string.IsNullOrEmpty(chatId) || string.IsNullOrEmpty(mesId)) return;
-            var user = await GetCurrentUserAsync();
-            var mes = await db.Messages.Include(m => m.Sender).FirstOrDefaultAsync(m => m.Id.ToString().ToLower() == mesId);
-            if (mes == null || !mes.IsPined) return;
-            var chat = await db.GetChatById(chatId);
-            if (chat is Channel channel)
-            {
-                var userEnrollment = channel.GetEnrollmentByUser(user);
-                if (userEnrollment?.Role == Role.Reader) return;
-            }
-            mes.IsPined = false;
-            await db.SaveChangesAsync();
-            await Clients.Group(chatId).SendAsync("MessagePinChanged", mesId, chatId, false);
+            await PinOrUnpinMessage(chatId, mesId, false);
         }
 
         public async Task PinChat(string chatId)
@@ -135,6 +153,39 @@ namespace webapi.Hubs
                 await Clients.Group(chatId).SendAsync("ChatDeleted", chatId);
             }
             Console.WriteLine("ChatDeleted");
+        }
+
+        public async Task GetChatLogs(string chatId, int page)
+        {
+            var user = await GetCurrentUserAsync();
+            var chat = await db.GetChatById(chatId);
+            if (user == null || chat == null || page < 0)
+            {
+                return;
+            }
+            var group = chat as Group;
+            var userRole = group.GetEnrollmentByUser(user)?.Role;
+            if (userRole != Role.Owner)
+            {
+                return;
+            }
+            Console.WriteLine("Logs retrieval initiated");
+            int logsOnPage = 10;
+            int logsCount = chat.Logs.Count;
+            int startIndex = page * logsOnPage;
+            int endIndex = Math.Min((page + 1) * logsOnPage, logsCount);
+            if (startIndex >= logsCount || endIndex < 0)
+            {
+                await Clients.Caller.SendAsync("ReceiveChatLogs", null);
+                return;
+            }
+            var logs = chat.Logs.OrderByDescending(l=>l.Timestamp).ToList().GetRange(startIndex, endIndex - startIndex);
+            var result = logs.Select(l => new
+            {
+                Time = l.Timestamp,
+                Message = $"{l.User.Name} ({group.GetEnrollmentByUser(l.User)?.Role}): {l.Action}",
+            }).ToList();
+            await Clients.Caller.SendAsync("ReceiveChatLogs", result);
         }
     }
 }

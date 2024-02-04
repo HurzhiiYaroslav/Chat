@@ -18,6 +18,7 @@
     <Folder Include="src\Components\AttachedMedia\" />
     <Folder Include="src\Components\FileItem\" />
     <Folder Include="src\Components\Modals\DoYouWantModal\" />
+    <Folder Include="src\Components\Modals\LogsModal\" />
     <Folder Include="src\Components\Modals\UserListModal\" />
     <Folder Include="src\Components\Modals\CreateChatModal\" />
     <Folder Include="src\Components\Modals\EditProfileModal\" />

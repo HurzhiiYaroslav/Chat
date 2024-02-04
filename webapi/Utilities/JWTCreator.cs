@@ -11,7 +11,6 @@ namespace webapi.Utilities
         public static string CreateToken(User user)
         {
             var claims = new List<Claim> { new Claim(ClaimTypes.Name, user.Login) };
-            // создаем JWT-токен
             var jwt = new JwtSecurityToken(
                     issuer: AuthOptions.Issuer,
                     audience: AuthOptions.Audience,
@@ -37,8 +36,7 @@ namespace webapi.Utilities
                     ValidateLifetime = false
                 };
 
-                SecurityToken validatedToken;
-                var principal = tokenHandler.ValidateToken(token, validationParameters, out validatedToken);
+                var principal = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
                 var claims = principal?.Claims;
                 if (claims != null)
                 {
@@ -58,7 +56,7 @@ namespace webapi.Utilities
     {
         public const string Issuer = "MyAuthServer";
         public const string Audience = "MyAuthClient";
-        private const string Key = "mysupersecret_secretkey!123";
+        private const string Key = "mysupersecret_secretkey!123456789";
 
         public static SymmetricSecurityKey GetSymmetricSecurityKey()
         {

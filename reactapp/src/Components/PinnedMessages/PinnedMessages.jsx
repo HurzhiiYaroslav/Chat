@@ -24,7 +24,6 @@ function PinnedMessages({ currentChat, chatData, connection }) {
 
     const pinnedMessages = useMemo(() => {
         setPinnedMessages();
-        console.log(pinnedMessagesList);
         if (!pinnedMessagesList || pinnedMessagesList.length === 0 || !pinnedMessagesList[curPin]) return null;
         const sender = getSender(currentChat, pinnedMessagesList[curPin], chatData);
         return (

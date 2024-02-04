@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using webapi.Utilities;
 using webapi.Entities;
+using System;
 
 namespace webapi.Hubs
 {
@@ -36,10 +37,18 @@ namespace webapi.Hubs
             if (chat != null && user != null && chat is Channel channel)
             {
                 channel.IsPublic = !channel.IsPublic;
+                string currentPublicity = (channel.IsPublic ? "Public" : "Non-Public");
                 db.Update(channel);
+                var newLog = new ChatLog
+                {
+                    Action="changed publicity to " + currentPublicity,
+                    User = user,
+                };
+                db.Add(newLog);
+                chat.Logs.Add(newLog);
                 await db.SaveChangesAsync();
                 await Clients.Group(channelId).SendAsync("publicityChanged", channelId);
-                await Notify(channelId, "Channel is " + (channel.IsPublic ? "Public" : "Non-Public") + " now");
+                await Notify(channelId, "Channel is " + currentPublicity + " now");
             }
 
         }
@@ -52,17 +61,7 @@ namespace webapi.Hubs
 
             return (user, group, special);
         }
-        private async Task UpdateEnrollmentRole(Group group, User publisher, Role newRole, string channelId)
-        {
-            var enrollment = group.GetEnrollmentByUser(publisher);
-            if (enrollment != null && enrollment.Role != newRole)
-            {
-                enrollment.Role = newRole;
-                await db.SaveChangesAsync();
-                await Clients.Group(channelId).SendAsync("updateEnrollment", JsonConvert.SerializeObject(JSONConvertor.EnrollmentToJsonObject(enrollment)), channelId);
-            }
-        }
-
+        
         public async Task UpdateUserRole(string groupId, string specialId, string newRoleValue)
         {
             Enum.TryParse(newRoleValue, true, out Role newRole);
@@ -71,7 +70,25 @@ namespace webapi.Hubs
 
             if (user != null && group != null && group.GetEnrollmentByUser(user).Role == Role.Owner && group.Users.Contains(special))
             {
+                var newLog = new ChatLog
+                {
+                    Action = "changed  " + special.Name + "`s role to " + newRoleValue,
+                    User = user,
+                };
+                db.Add(newLog);
+                group.Logs.Add(newLog);
                 await UpdateEnrollmentRole(group, special, newRole, groupId);
+            }
+        }
+        private async Task UpdateEnrollmentRole(Group group, User publisher, Role newRole, string channelId)
+        {
+            var enrollment = group.GetEnrollmentByUser(publisher);
+            if (enrollment != null && enrollment.Role != newRole)
+            {
+                enrollment.Role = newRole;
+                
+                await db.SaveChangesAsync();
+                await Clients.Group(channelId).SendAsync("updateEnrollment", JsonConvert.SerializeObject(JSONConvertor.EnrollmentToJsonObject(enrollment)), channelId);
             }
         }
 

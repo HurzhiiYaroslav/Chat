@@ -1,0 +1,30 @@
+.logsInner {
+    max-height:50vh;
+    overflow-y:auto;
+
+    .logItem {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #f8f8f8;
+
+        .logTime {
+            font-weight: bold;
+            color: #333;
+            border-right: 1px solid black;
+            padding-right: 5px;
+            width:20%;
+            overflow-wrap:break-word;
+        }
+
+        .logMessage {
+            flex-grow: 1;
+            margin-left: 10px;
+            color: #555;
+        }
+    }
+}
