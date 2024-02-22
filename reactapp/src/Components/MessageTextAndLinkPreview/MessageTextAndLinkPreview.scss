@@ -1,0 +1,36 @@
+.link-preview-container {
+    border: 1px solid #ccc;
+    padding: 0.5rem;
+    margin: 0.5rem;
+    border-radius: 8px;
+    cursor:pointer;
+    .link-preview-title {
+        font-size: 1.2rem;
+        margin: 0;
+    }
+
+    .link-preview-description {
+        color: #555;
+        margin-bottom: 0.5rem;
+    }
+
+    .link-preview-image {
+        max-width: 100%;
+        height: auto;
+        border-radius: 4px;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    }
+
+    @media screen and (max-width: 600px) {
+        padding: 0.5rem;
+        margin: 0.5rem;
+
+        .link-preview-title {
+            font-size: 1rem;
+        }
+
+        .link-preview-description {
+            margin-bottom: 0.3rem;
+        }
+    }
+}

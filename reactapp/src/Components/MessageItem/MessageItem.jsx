@@ -4,6 +4,7 @@ import { AvatarUrl, MediaUrl } from "../../Links"
 import FileItem from "../FileItem/FileItem";
 import MessageContext from '../Modals/MessageContext/MessageContext';
 import MessageCM from '../ContextMenus/MessageCM';
+import MessageTextAndLinkPreview from '../MessageTextAndLinkPreview/MessageTextAndLinkPreview';
 import { getCurrentUserRole, getSender } from "../../Utilities/chatFunctions"
 import "./MessageItem.scss"
 import 'react-contexify/ReactContexify.css';
@@ -123,7 +124,8 @@ function MessageItem({ item, chatData, currentChat, connection, setCurrentChatId
                 <div className="SenderName">{sender ? sender.Name : currentChat.Companion ? currentChat.Companion.Name : "undefined"}</div>
                 {renderAttachedImages()}
                 {renderMessageMedia()}
-                {item.content && <p className="MessageContent">{item.content}</p>}
+                
+                {item.content && <MessageTextAndLinkPreview content={item.content }> </MessageTextAndLinkPreview>}
                 <div className="footer">
                     <p className="SeenStatus">{isSeen(item) && (<span className="icon">&#10003;</span>)}</p>
                     <p className="MessageTime">{ConvertTime(item.time)}</p>

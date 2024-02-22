@@ -11,3 +11,4 @@ export const DownloadUrl = BaseUrl + '/Download';
 export const EditProfileUrl = BaseUrl + '/EditProfile';
 export const CreateChatUrl = BaseUrl + '/CreateChat';
 export const EditGroupUrl = BaseUrl + '/EditGroup';
+export const LinkPreviewUrl = BaseUrl + '/link-preview';

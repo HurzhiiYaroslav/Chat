@@ -1,5 +1,7 @@
-import { DownloadUrl } from "../Links"
+import { DownloadUrl,LinkPreviewUrl } from "../Links"
 import { createDialod } from "./signalrMethods";
+
+const accessToken = localStorage.getItem('accessToken');
 
 export const OpenOrCreateDialog = (userId, chatData, setCurrentChatId, connection) => {
     const filteredChats = chatData.chats.filter((chat) => chat.Companion && chat.Companion.Id === userId);
@@ -23,7 +25,6 @@ export const isAbleToKick = (userRole, punishedRole) => {
 }
 
 export const DownloadFile = (file) => {
-    const accessToken = localStorage.getItem('accessToken');
 
     fetch(DownloadUrl + `?filePath=${file.Path}&fileType=${file.Type}&fileName=${file.Name}`, {
         method: 'GET',
@@ -90,3 +91,24 @@ export const getSender=(chat,message,chatData)=>{
         return foundSender;
     }
 }
+
+export const getLinkPreview = async (url) => {
+    try {
+        const response = await fetch(LinkPreviewUrl + `?url=${encodeURIComponent(url)}`, {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            }
+        });
+        
+        if (response.status === 200) {
+            const data = await response.json();
+            return data.data;
+        } else {
+            throw new Error(`Failed to fetch data. Status: ${response.status}`);
+        }
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
